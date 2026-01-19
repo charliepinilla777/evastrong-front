@@ -1,0 +1,100 @@
+<svg viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradientes principales -->
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6D28D9;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#B46BFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2E1065;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- Gradiente para elementos secundarios -->
+    <radialGradient id="glowGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#B46BFF;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#6D28D9;stop-opacity:0.2" />
+    </radialGradient>
+
+    <!-- Patrón de puntos -->
+    <pattern id="dotPattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
+      <circle cx="40" cy="40" r="3" fill="#B46BFF" opacity="0.3" />
+    </pattern>
+
+    <!-- Patrón de líneas ondulantes -->
+    <pattern id="wavePattern" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+      <path d="M0,100 Q50,50 100,100 T200,100" stroke="#B46BFF" stroke-width="2" fill="none" opacity="0.2" />
+    </pattern>
+  </defs>
+
+  <!-- Fondo base degradado -->
+  <rect width="1080" height="1920" fill="url(#mainGradient)" />
+
+  <!-- Elemento decorativo superior izquierda - Círculos -->
+  <g opacity="0.15">
+    <circle cx="50" cy="100" r="150" fill="#ffffff" />
+    <circle cx="100" cy="50" r="100" fill="#B46BFF" />
+  </g>
+
+  <!-- Elemento decorativo superior derecha -->
+  <g opacity="0.12">
+    <circle cx="1030" cy="150" r="180" fill="#ffffff" />
+    <circle cx="980" cy="80" r="120" fill="#B46BFF" />
+  </g>
+
+  <!-- Ondas dinámicas en la parte superior -->
+  <path d="M0,200 Q270,100 540,200 T1080,200 L1080,0 L0,0 Z" fill="#ffffff" opacity="0.05" />
+  <path d="M0,250 Q270,150 540,250 T1080,250 L1080,200 Q540,300 0,200 Z" fill="#B46BFF" opacity="0.08" />
+
+  <!-- Formas geométricas dinámicas - Triángulos -->
+  <polygon points="800,300 900,400 700,400" fill="#B46BFF" opacity="0.1" />
+  <polygon points="200,500 280,600 120,600" fill="#ffffff" opacity="0.08" />
+
+  <!-- Barras de energía vertical -->
+  <rect x="100" y="600" width="15" height="300" fill="#B46BFF" opacity="0.15" />
+  <rect x="150" y="650" width="15" height="250" rx="8" fill="#B46BFF" opacity="0.12" />
+  <rect x="200" y="620" width="15" height="280" rx="8" fill="#B46BFF" opacity="0.1" />
+  <rect x="250" y="580" width="15" height="320" rx="8" fill="#B46BFF" opacity="0.15" />
+
+  <!-- Barras de energía en lado derecho -->
+  <rect x="830" y="700" width="15" height="280" fill="#B46BFF" opacity="0.15" />
+  <rect x="880" y="750" width="15" height="230" rx="8" fill="#B46BFF" opacity="0.12" />
+  <rect x="930" y="720" width="15" height="260" rx="8" fill="#B46BFF" opacity="0.1" />
+
+  <!-- Elemento circular motivacional - Centro -->
+  <circle cx="540" cy="900" r="200" fill="url(#glowGradient)" opacity="0.3" />
+  <circle cx="540" cy="900" r="160" fill="none" stroke="#B46BFF" stroke-width="2" opacity="0.4" />
+  <circle cx="540" cy="900" r="120" fill="none" stroke="#B46BFF" stroke-width="1" opacity="0.3" stroke-dasharray="5,5" />
+
+  <!-- Formas abstractas de fuerza en la parte media -->
+  <path d="M100,1000 L300,950 L350,1050 L200,1100 Z" fill="#B46BFF" opacity="0.08" />
+  <path d="M780,1100 L950,1050 L1000,1150 L850,1200 Z" fill="#B46BFF" opacity="0.08" />
+
+  <!-- Líneas de movimiento dinámicas -->
+  <line x1="0" y1="1200" x2="200" y2="1180" stroke="#B46BFF" stroke-width="2" opacity="0.15" />
+  <line x1="880" y1="1220" x2="1080" y2="1200" stroke="#B46BFF" stroke-width="2" opacity="0.15" />
+  <line x1="150" y1="1350" x2="400" y2="1330" stroke="#B46BFF" stroke-width="2" opacity="0.12" />
+  <line x1="680" y1="1370" x2="930" y2="1350" stroke="#B46BFF" stroke-width="2" opacity="0.12" />
+
+  <!-- Puntos de énfasis inferior -->
+  <circle cx="100" cy="1500" r="8" fill="#B46BFF" opacity="0.3" />
+  <circle cx="980" cy="1520" r="8" fill="#B46BFF" opacity="0.3" />
+  <circle cx="540" cy="1550" r="10" fill="#B46BFF" opacity="0.25" />
+
+  <!-- Elemento decorativo inferior - Ondas -->
+  <path d="M0,1650 Q270,1550 540,1650 T1080,1650 L1080,1800 Q540,1900 0,1800 Z" fill="#ffffff" opacity="0.06" />
+  <path d="M0,1700 Q270,1600 540,1700 T1080,1700 L1080,1920 Q540,1920 0,1920 Z" fill="#B46BFF" opacity="0.05" />
+
+  <!-- Brillo final en esquina inferior derecha -->
+  <circle cx="1050" cy="1850" r="200" fill="url(#glowGradient)" opacity="0.25" />
+
+  <!-- Elemento decorativo final - Líneas paralelas -->
+  <line x1="0" y1="1750" x2="1080" y2="1750" stroke="#B46BFF" stroke-width="1" opacity="0.1" />
+  <line x1="0" y1="1800" x2="1080" y2="1800" stroke="#B46BFF" stroke-width="1" opacity="0.08" />
+  <line x1="0" y1="1850" x2="1080" y2="1850" stroke="#B46BFF" stroke-width="1" opacity="0.1" />
+
+  <!-- Texto motivacional oculto (opcional, para agregar después) -->
+  <text x="540" y="950" font-size="24" font-weight="bold" text-anchor="middle" fill="#B46BFF" opacity="0" font-family="Arial">
+    TRANSFORMA TU CUERPO
+  </text>
+  <text x="540" y="1000" font-size="24" font-weight="bold" text-anchor="middle" fill="#B46BFF" opacity="0" font-family="Arial">
+    FORTALECE TU MENTE
+  </text>
+</svg>

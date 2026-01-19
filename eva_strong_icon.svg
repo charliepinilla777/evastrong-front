@@ -1,0 +1,70 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo gradiente -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6D28D9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B46BFF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="muscleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.95" />
+      <stop offset="100%" style="stop-color:#f0e5ff;stop-opacity:0.9" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Círculo de fondo -->
+  <circle cx="100" cy="100" r="100" fill="url(#bgGradient)"/>
+  
+  <!-- Cabeza (círculo) -->
+  <circle cx="100" cy="55" r="20" fill="url(#muscleGradient)"/>
+  
+  <!-- Cuello -->
+  <rect x="95" y="75" width="10" height="10" fill="url(#muscleGradient)"/>
+  
+  <!-- Brazo izquierdo flexionado (mostrando músculo) -->
+  <g>
+    <!-- Bíceps -->
+    <ellipse cx="65" cy="85" rx="15" ry="20" fill="url(#muscleGradient)"/>
+    <!-- Línea de músculo (sombra) -->
+    <path d="M 55 75 Q 65 70 70 85" stroke="#B46BFF" stroke-width="2" fill="none" opacity="0.5"/>
+  </g>
+  
+  <!-- Brazo derecho flexionado (mostrando músculo) -->
+  <g>
+    <!-- Bíceps -->
+    <ellipse cx="135" cy="85" rx="15" ry="20" fill="url(#muscleGradient)"/>
+    <!-- Línea de músculo (sombra) -->
+    <path d="M 130 85 Q 140 70 145 75" stroke="#B46BFF" stroke-width="2" fill="none" opacity="0.5"/>
+  </g>
+  
+  <!-- Torso (pecho) -->
+  <rect x="80" y="95" width="40" height="35" rx="5" fill="url(#muscleGradient)"/>
+  
+  <!-- Línea central del torso (definición) -->
+  <line x1="100" y1="95" x2="100" y2="130" stroke="#B46BFF" stroke-width="2" opacity="0.4"/>
+  
+  <!-- Brazos inferiores -->
+  <rect x="50" y="110" width="12" height="30" fill="url(#muscleGradient)"/>
+  <rect x="138" y="110" width="12" height="30" fill="url(#muscleGradient)"/>
+  
+  <!-- Manos (puños cerrados) -->
+  <circle cx="56" cy="145" r="8" fill="url(#muscleGradient)"/>
+  <circle cx="144" cy="145" r="8" fill="url(#muscleGradient)"/>
+  
+  <!-- Pierna izquierda -->
+  <rect x="80" y="135" width="12" height="40" rx="6" fill="url(#muscleGradient)"/>
+  
+  <!-- Pierna derecha -->
+  <rect x="108" y="135" width="12" height="40" rx="6" fill="url(#muscleGradient)"/>
+  
+  <!-- Pies -->
+  <ellipse cx="86" cy="180" rx="8" ry="6" fill="url(#muscleGradient)"/>
+  <ellipse cx="114" cy="180" rx="8" ry="6" fill="url(#muscleGradient)"/>
+  
+  <!-- Detalles de poder: líneas de energía -->
+  <g opacity="0.6">
+    <line x1="30" y1="50" x2="40" y2="60" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+    <line x1="170" y1="50" x2="160" y2="60" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+    <line x1="25" y1="100" x2="35" y2="100" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+    <line x1="175" y1="100" x2="165" y2="100" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>
