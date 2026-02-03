@@ -30,19 +30,8 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs {
-        release {
-            keyAlias "evastrong"
-            keyPassword "evastrong123"
-            storeFile file(System.getProperty("user.home") + "/.android/eva_strong.keystore")
-            storePassword "evastrong123"
-        }
-    }
-
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
-
             // Reduce tamaño del APK/AAB
             isMinifyEnabled = true
             isShrinkResources = true

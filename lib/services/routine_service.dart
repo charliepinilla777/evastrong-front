@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/app_config.dart';
 import 'api_service_v2.dart';
 import 'secure_storage_service.dart';
 
@@ -72,7 +73,8 @@ class Routine {
 
 /// Servicio para gestionar rutinas
 class RoutineService {
-  static const String _baseUrl = 'http://localhost:5000';
+  // Usar configuración centralizada
+  static String get _baseUrl => AppConfig.backendUrl;
 
   /// Obtener todas las rutinas con filtros
   static Future<Map<String, dynamic>> getRoutines({
@@ -95,10 +97,9 @@ class RoutineService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .get(Uri.parse(url), headers: headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -123,10 +124,9 @@ class RoutineService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-      final response = await http.get(
-        Uri.parse('$_baseUrl/routines/$routineId'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .get(Uri.parse('$_baseUrl/routines/$routineId'), headers: headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -164,11 +164,13 @@ class RoutineService {
         'Authorization': 'Bearer $token',
       };
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/routines/$routineId/rate'),
-        headers: headers,
-        body: jsonEncode({'rating': rating}),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/routines/$routineId/rate'),
+            headers: headers,
+            body: jsonEncode({'rating': rating}),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -184,11 +186,13 @@ class RoutineService {
   }
 
   /// Obtener rutinas de un instructor
-  static Future<List<Routine>> getInstructorRoutines(String instructorId) async {
+  static Future<List<Routine>> getInstructorRoutines(
+    String instructorId,
+  ) async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/routines/instructor/$instructorId'),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .get(Uri.parse('$_baseUrl/routines/instructor/$instructorId'))
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -242,11 +246,9 @@ class RoutineService {
         'exercises': exercises ?? [],
       });
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/routines'),
-        headers: headers,
-        body: body,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(Uri.parse('$_baseUrl/routines'), headers: headers, body: body)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 201) {
         final data = jsonDecode(response.body);
@@ -278,11 +280,13 @@ class RoutineService {
         'Authorization': 'Bearer $token',
       };
 
-      final response = await http.put(
-        Uri.parse('$_baseUrl/routines/$routineId'),
-        headers: headers,
-        body: jsonEncode(updates),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .put(
+            Uri.parse('$_baseUrl/routines/$routineId'),
+            headers: headers,
+            body: jsonEncode(updates),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -313,10 +317,12 @@ class RoutineService {
         'Authorization': 'Bearer $token',
       };
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/routines/$routineId/publish'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/routines/$routineId/publish'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
         throw ApiException(
@@ -337,14 +343,11 @@ class RoutineService {
         throw UnauthorizedException();
       }
 
-      final headers = {
-        'Authorization': 'Bearer $token',
-      };
+      final headers = {'Authorization': 'Bearer $token'};
 
-      final response = await http.delete(
-        Uri.parse('$_baseUrl/routines/$routineId'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .delete(Uri.parse('$_baseUrl/routines/$routineId'), headers: headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
         throw ApiException(

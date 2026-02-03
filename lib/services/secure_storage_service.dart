@@ -10,12 +10,8 @@ class SecureStorageService {
 
   // Instancia singleton
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      keyCipherMatch: KeyCipherMatch.preferredStrong,
-    ),
-    iOptions: IOSOptions(
-      accessibility: KeychainAccessibility.first_available_when_unlocked,
-    ),
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.unlocked),
   );
 
   /// Guardar token de acceso

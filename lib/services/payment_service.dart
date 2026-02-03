@@ -1,11 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/app_config.dart';
 
 class PaymentService {
-  static const String baseUrl = 'http://localhost:5000/payments';
-  
-  // Para Render (cambiar cuando esté en producción)
-  // static const String baseUrl = 'https://tu-servicio.onrender.com/payments';
+  // Usar configuración centralizada
+  static String get baseUrl => AppConfig.paymentsUrl;
 
   String? jwtToken;
 
@@ -16,18 +15,26 @@ class PaymentService {
     required String plan, // 'basic' | 'premium'
     required String period, // 'monthly' | 'annual'
   }) async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
+    }
+
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/create-order'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $jwtToken',
-        },
-        body: jsonEncode({
-          'plan': plan,
-          'period': period,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/create-order'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+            body: jsonEncode({'plan': plan, 'period': period}),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Tiempo de espera agotado al crear orden PayPal');
+            },
+          );
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -43,14 +50,25 @@ class PaymentService {
   Future<Map<String, dynamic>> capturePayPalOrder({
     required String orderId,
   }) async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
+    }
+
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/capture-order/$orderId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $jwtToken',
-        },
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/capture-order/$orderId'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Tiempo de espera agotado al capturar pago');
+            },
+          );
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -68,19 +86,30 @@ class PaymentService {
     required String period, // 'monthly' | 'annual'
     String currency = 'COP', // 'COP' | 'USD'
   }) async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
+    }
+
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/mercado-pago/create-preference'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $jwtToken',
-        },
-        body: jsonEncode({
-          'plan': plan,
-          'period': period,
-          'currency': currency,
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/mercado-pago/create-preference'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+            body: jsonEncode({
+              'plan': plan,
+              'period': period,
+              'currency': currency,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Tiempo de espera agotado al crear preferencia');
+            },
+          );
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -94,14 +123,25 @@ class PaymentService {
 
   /// Obtener suscripción actual del usuario
   Future<Map<String, dynamic>> getSubscription() async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
+    }
+
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/subscription'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $jwtToken',
-        },
-      );
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/subscription'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Tiempo de espera agotado al obtener suscripción');
+            },
+          );
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -115,14 +155,25 @@ class PaymentService {
 
   /// Cancelar suscripción
   Future<Map<String, dynamic>> cancelSubscription() async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
+    }
+
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/cancel-subscription'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $jwtToken',
-        },
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/cancel-subscription'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Tiempo de espera agotado al cancelar suscripción');
+            },
+          );
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -138,14 +189,25 @@ class PaymentService {
   Future<Map<String, dynamic>> getMercadoPagoPaymentStatus({
     required String paymentId,
   }) async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
+    }
+
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/mercado-pago/payment/$paymentId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $jwtToken',
-        },
-      );
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/mercado-pago/payment/$paymentId'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Tiempo de espera agotado al obtener estado de pago');
+            },
+          );
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);

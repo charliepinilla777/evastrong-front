@@ -8,9 +8,9 @@ class PaymentsScreen extends StatefulWidget {
   final String jwtToken;
 
   const PaymentsScreen({
-    Key? key,
+    super.key,
     required this.jwtToken,
-  }) : super(key: key);
+  });
 
   @override
   State<PaymentsScreen> createState() => _PaymentsScreenState();
@@ -23,11 +23,24 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   @override
   void initState() {
     super.initState();
-    // Obtener suscripción actual al cargar
-    Future.microtask(() {
-      context.read<PaymentProvider>().setJwtToken(widget.jwtToken);
-      context.read<PaymentProvider>().fetchSubscription();
-    });
+    _initializePayments();
+  }
+
+  Future<void> _initializePayments() async {
+    try {
+      final paymentProvider = context.read<PaymentProvider>();
+      paymentProvider.setJwtToken(widget.jwtToken);
+      await paymentProvider.fetchSubscription();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar suscripción: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override

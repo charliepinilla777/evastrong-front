@@ -1,9 +1,12 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/app_config.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:5000'; // Cambiar en producción
   static String? _token;
+
+  // Usar configuración centralizada
+  static String get baseUrl => AppConfig.backendUrl;
 
   // Setter para el token
   static void setToken(String token) {
@@ -36,11 +39,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/register'),
         headers: _getHeaders(),
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-          'name': name,
-        }),
+        body: jsonEncode({'email': email, 'password': password, 'name': name}),
       );
 
       if (response.statusCode == 201) {
@@ -64,10 +63,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: _getHeaders(),
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
 
       if (response.statusCode == 200) {
@@ -224,10 +220,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/payments/create-preference'),
         headers: _getHeaders(requireAuth: true),
-        body: jsonEncode({
-          'plan': plan,
-          'period': period,
-        }),
+        body: jsonEncode({'plan': plan, 'period': period}),
       );
 
       if (response.statusCode == 200) {
@@ -316,7 +309,9 @@ class ApiService {
   }
 
   /// Cancelar suscripción
-  static Future<Map<String, dynamic>> cancelSubscription({String? reason}) async {
+  static Future<Map<String, dynamic>> cancelSubscription({
+    String? reason,
+  }) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/subscriptions/cancel'),

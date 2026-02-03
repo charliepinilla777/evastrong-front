@@ -1,7 +1,9 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'secure_storage_service.dart';
+import '../config/app_config.dart';
 
 /// Excepciones personalizadas para la API
 class ApiException implements Exception {
@@ -9,51 +11,41 @@ class ApiException implements Exception {
   final int? statusCode;
   final String? code;
 
-  ApiException({
-    required this.message,
-    this.statusCode,
-    this.code,
-  });
+  ApiException({required this.message, this.statusCode, this.code});
 
   @override
   String toString() => message;
 }
 
 class UnauthorizedException extends ApiException {
-  UnauthorizedException({String message = 'No autorizado'})
-      : super(message: message, statusCode: 401, code: 'UNAUTHORIZED');
+  UnauthorizedException({super.message = 'No autorizado'})
+    : super(statusCode: 401, code: 'UNAUTHORIZED');
 }
 
 class TokenExpiredException extends ApiException {
-  TokenExpiredException({String message = 'Token expirado'})
-      : super(message: message, statusCode: 401, code: 'TOKEN_EXPIRED');
+  TokenExpiredException({super.message = 'Token expirado'})
+    : super(statusCode: 401, code: 'TOKEN_EXPIRED');
 }
 
 class NetworkException extends ApiException {
-  NetworkException({String message = 'Error de conexión'})
-      : super(message: message, code: 'NETWORK_ERROR');
+  NetworkException({super.message = 'Error de conexión'})
+    : super(code: 'NETWORK_ERROR');
 }
 
 class ServerException extends ApiException {
-  ServerException({required String message, int? statusCode})
-      : super(message: message, statusCode: statusCode, code: 'SERVER_ERROR');
+  ServerException({required super.message, super.statusCode})
+    : super(code: 'SERVER_ERROR');
 }
 
 /// Servicio API mejorado con refresh token automático
 class ApiServiceV2 {
-  // Base URL - cambiar según ambiente
-  static const String _baseUrlDev = 'http://localhost:5000';
-  static const String _baseUrlProd = 'https://api.evastrong.com'; // Cambiar URL de producción
-  
+  // Usar configuración centralizada
+  static String get _baseUrl => AppConfig.backendUrl;
+
   // Timeouts
-  static const Duration _timeout = Duration(seconds: 30);
+  static Duration get _timeout => AppConfig.apiTimeout;
   static const int _maxRetries = 3;
   static const int _retryDelayMs = 1000;
-
-  // Obtener base URL según ambiente
-  static String get _baseUrl {
-    return kDebugMode ? _baseUrlDev : _baseUrlProd;
-  }
 
   // Headers predeterminados
   static Map<String, String> _getHeaders({bool requireAuth = false}) {
@@ -73,25 +65,39 @@ class ApiServiceV2 {
   }) async {
     try {
       final response = await request().timeout(_timeout);
-      
+
       // Si requiere autenticación y recibe 401, intentar refresh
       if (requireAuth && response.statusCode == 401 && retryCount < 1) {
         final refreshed = await _refreshTokenIfNeeded();
         if (refreshed) {
-          return _makeRequest(request, requireAuth: requireAuth, retryCount: retryCount + 1);
+          return _makeRequest(
+            request,
+            requireAuth: requireAuth,
+            retryCount: retryCount + 1,
+          );
         }
       }
-      
+
       return response;
     } on http.ClientException catch (e) {
       // Error de conexión
       if (retryCount < _maxRetries) {
-        await Future.delayed(Duration(milliseconds: _retryDelayMs * (retryCount + 1)));
-        return _makeRequest(request, requireAuth: requireAuth, retryCount: retryCount + 1);
+        await Future.delayed(
+          Duration(milliseconds: _retryDelayMs * (retryCount + 1)),
+        );
+        return _makeRequest(
+          request,
+          requireAuth: requireAuth,
+          retryCount: retryCount + 1,
+        );
       }
-      throw NetworkException(message: 'No se pudo conectar al servidor: ${e.message}');
+      throw NetworkException(
+        message: 'No se pudo conectar al servidor: ${e.message}',
+      );
     } on TimeoutException catch (_) {
-      throw NetworkException(message: 'Tiempo de espera agotado. Intenta de nuevo.');
+      throw NetworkException(
+        message: 'Tiempo de espera agotado. Intenta de nuevo.',
+      );
     }
   }
 
@@ -99,53 +105,56 @@ class ApiServiceV2 {
   static Map<String, dynamic> _handleResponse(http.Response response) {
     try {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      
+
       switch (response.statusCode) {
         case 200:
         case 201:
           return data;
-        
+
         case 400:
           throw ApiException(
             message: data['message'] ?? 'Solicitud inválida',
             statusCode: 400,
             code: 'BAD_REQUEST',
           );
-        
+
         case 401:
           throw UnauthorizedException(
-            message: data['message'] ?? 'Sesión expirada. Por favor inicia sesión nuevamente.',
+            message:
+                data['message'] ??
+                'Sesión expirada. Por favor inicia sesión nuevamente.',
           );
-        
+
         case 403:
           throw ApiException(
             message: data['message'] ?? 'No tienes permiso para acceder a esto',
             statusCode: 403,
             code: 'FORBIDDEN',
           );
-        
+
         case 404:
           throw ApiException(
             message: data['message'] ?? 'Recurso no encontrado',
             statusCode: 404,
             code: 'NOT_FOUND',
           );
-        
+
         case 429:
           throw ApiException(
             message: 'Demasiadas solicitudes. Intenta más tarde.',
             statusCode: 429,
             code: 'RATE_LIMITED',
           );
-        
+
         case 500:
         case 502:
         case 503:
           throw ServerException(
-            message: data['message'] ?? 'Error del servidor. Intenta más tarde.',
+            message:
+                data['message'] ?? 'Error del servidor. Intenta más tarde.',
             statusCode: response.statusCode,
           );
-        
+
         default:
           throw ApiException(
             message: data['message'] ?? 'Error desconocido',
@@ -167,10 +176,13 @@ class ApiServiceV2 {
       final token = await SecureStorageService.getToken();
       if (token == null) return false;
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/auth/refresh'),
-        headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
-      ).timeout(_timeout);
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/auth/refresh'),
+            headers: _getHeaders(requireAuth: true)
+              ..['Authorization'] = 'Bearer $token',
+          )
+          .timeout(_timeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -178,7 +190,7 @@ class ApiServiceV2 {
         await SecureStorageService.saveToken(newToken);
         return true;
       }
-      
+
       // Si no se puede renovar, limpiar sesión
       await SecureStorageService.clearAll();
       return false;
@@ -200,9 +212,11 @@ class ApiServiceV2 {
     if (email.isEmpty || password.isEmpty || name.isEmpty) {
       throw ApiException(message: 'Por favor completa todos los campos');
     }
-    
+
     if (password.length < 8) {
-      throw ApiException(message: 'La contraseña debe tener al menos 8 caracteres');
+      throw ApiException(
+        message: 'La contraseña debe tener al menos 8 caracteres',
+      );
     }
 
     try {
@@ -219,7 +233,7 @@ class ApiServiceV2 {
       );
 
       final data = _handleResponse(response);
-      
+
       // Guardar token de forma segura
       if (data['token'] != null) {
         await SecureStorageService.saveToken(data['token']);
@@ -257,7 +271,7 @@ class ApiServiceV2 {
       );
 
       final data = _handleResponse(response);
-      
+
       // Guardar token de forma segura
       if (data['token'] != null) {
         await SecureStorageService.saveToken(data['token']);
@@ -278,10 +292,13 @@ class ApiServiceV2 {
     try {
       final token = await SecureStorageService.getToken();
       if (token != null) {
-        await http.post(
-          Uri.parse('$_baseUrl/auth/logout'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
-        ).timeout(_timeout);
+        await http
+            .post(
+              Uri.parse('$_baseUrl/auth/logout'),
+              headers: _getHeaders(requireAuth: true)
+                ..['Authorization'] = 'Bearer $token',
+            )
+            .timeout(_timeout);
       }
     } finally {
       await SecureStorageService.clearAll();
@@ -299,7 +316,8 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.get(
           Uri.parse('$_baseUrl/auth/verify'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
         ),
         requireAuth: true,
       );
@@ -323,7 +341,8 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.get(
           Uri.parse('$_baseUrl/users/profile'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
         ),
         requireAuth: true,
       );
@@ -360,7 +379,8 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.put(
           Uri.parse('$_baseUrl/users/profile'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
           body: jsonEncode(body),
         ),
         requireAuth: true,
@@ -383,14 +403,17 @@ class ApiServiceV2 {
     }
 
     if (newPassword.length < 8) {
-      throw ApiException(message: 'La nueva contraseña debe tener al menos 8 caracteres');
+      throw ApiException(
+        message: 'La nueva contraseña debe tener al menos 8 caracteres',
+      );
     }
 
     try {
       final response = await _makeRequest(
         () => http.post(
           Uri.parse('$_baseUrl/users/change-password'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
           body: jsonEncode({
             'currentPassword': currentPassword,
             'newPassword': newPassword,
@@ -421,11 +444,9 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.post(
           Uri.parse('$_baseUrl/payments/create-preference'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
-          body: jsonEncode({
-            'plan': plan,
-            'period': period,
-          }),
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
+          body: jsonEncode({'plan': plan, 'period': period}),
         ),
         requireAuth: true,
       );
@@ -447,7 +468,8 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.get(
           Uri.parse('$_baseUrl/payments/history'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
         ),
         requireAuth: true,
       );
@@ -471,7 +493,8 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.get(
           Uri.parse('$_baseUrl/subscriptions/current'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
         ),
         requireAuth: true,
       );
@@ -493,7 +516,8 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.post(
           Uri.parse('$_baseUrl/subscriptions/change-plan'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
           body: jsonEncode({'newPlan': newPlan}),
         ),
         requireAuth: true,
@@ -506,7 +530,9 @@ class ApiServiceV2 {
   }
 
   /// Cancelar suscripción
-  static Future<Map<String, dynamic>> cancelSubscription({String? reason}) async {
+  static Future<Map<String, dynamic>> cancelSubscription({
+    String? reason,
+  }) async {
     final token = await SecureStorageService.getToken();
     if (token == null) {
       throw UnauthorizedException();
@@ -516,7 +542,8 @@ class ApiServiceV2 {
       final response = await _makeRequest(
         () => http.post(
           Uri.parse('$_baseUrl/subscriptions/cancel'),
-          headers: _getHeaders(requireAuth: true)..['Authorization'] = 'Bearer $token',
+          headers: _getHeaders(requireAuth: true)
+            ..['Authorization'] = 'Bearer $token',
           body: jsonEncode({'reason': reason}),
         ),
         requireAuth: true,
@@ -525,6 +552,70 @@ class ApiServiceV2 {
       return _handleResponse(response);
     } catch (e) {
       rethrow;
+    }
+  }
+
+  /// Obtener estado de suscripción
+  static Future<Map<String, dynamic>> getSubscriptionStatus(String token) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$_baseUrl/subscriptions/current'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw TimeoutException('Timeout al obtener suscripción');
+            },
+          );
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'subscription': jsonDecode(response.body),
+        };
+      }
+      return {'success': false, 'error': 'Error obteniendo suscripción'};
+    } on TimeoutException catch (e) {
+      return {'success': false, 'error': 'Timeout: ${e.toString()}'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  /// Obtener rol del usuario
+  static Future<Map<String, dynamic>> getUserRole(String token) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$_baseUrl/users/role'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw TimeoutException('Timeout al obtener rol');
+            },
+          );
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'user': jsonDecode(response.body),
+        };
+      }
+      return {'success': false, 'error': 'Error obteniendo rol'};
+    } on TimeoutException catch (e) {
+      return {'success': false, 'error': 'Timeout: ${e.toString()}'};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
     }
   }
 }

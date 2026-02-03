@@ -47,6 +47,17 @@ dependencies:
   
   # Utils
   url_launcher: ^6.2.0
+  image_picker: ^1.0.4
+  jwt_decode: ^0.3.1
+  
+  # 3D Rendering
+  flutter_cube: ^0.1.1
+  
+  # Animated Background
+  animated_background: ^2.0.0
+  
+  # Google Fonts
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -72,7 +83,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/backgrounds/motivational_bg.svg
+    - assets/models/
+    - assets/images/
     - assets/backgrounds/energy_bg.svg
     - assets/backgrounds/womens_power_bg.svg
 
@@ -88,11 +100,17 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   # fonts:
-  #   - family: Schyler
+  #   - family: Raleway
   #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
+  #       - asset: fonts/Raleway-Regular.ttf
+  #       - asset: fonts/Raleway-Italic.ttf
   #         style: italic
+  #       - asset: fonts/Raleway-Bold.ttf
+  #         weight: 700
+  #       - asset: fonts/Raleway-Light.ttf
+  #         weight: 300
+  #       - asset: fonts/Raleway-Medium.ttf
+  #         weight: 500
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

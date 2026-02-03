@@ -1,9 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/app_config.dart';
 
 class ReferralService {
-  static const String baseUrl = 'http://localhost:5000/payments';
-  // Para producción: 'https://tu-servicio.onrender.com/payments'
+  // Usar configuración centralizada
+  static String get baseUrl => AppConfig.paymentsUrl;
 
   String? jwtToken;
 
@@ -62,9 +63,7 @@ class ReferralService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $jwtToken',
         },
-        body: jsonEncode({
-          'referralCode': referralCode,
-        }),
+        body: jsonEncode({'referralCode': referralCode}),
       );
 
       if (response.statusCode == 200) {
@@ -174,9 +173,7 @@ class ReferralService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $jwtToken',
         },
-        body: jsonEncode({
-          'amount': amountToApply,
-        }),
+        body: jsonEncode({'amount': amountToApply}),
       );
 
       if (response.statusCode == 200) {
@@ -194,9 +191,7 @@ class ReferralService {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/referral/terms'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode == 200) {
@@ -243,8 +238,10 @@ class Referral {
       referredUserId: json['referredUserId'] ?? '',
       referredEmail: json['referredEmail'] ?? '',
       referredName: json['referredName'] ?? '',
-      referralDate: DateTime.parse(json['referralDate'] ?? DateTime.now().toString()),
-      conversionDate: json['conversionDate'] != null 
+      referralDate: DateTime.parse(
+        json['referralDate'] ?? DateTime.now().toString(),
+      ),
+      conversionDate: json['conversionDate'] != null
           ? DateTime.parse(json['conversionDate'])
           : null,
       isConverted: json['isConverted'] ?? false,
@@ -288,7 +285,8 @@ class ReferralStats {
       totalBonusEarned: (json['totalBonusEarned'] ?? 0).toDouble(),
       bonusCurrency: json['bonusCurrency'] ?? 'USD',
       conversionRate: (json['conversionRate'] ?? 0).toDouble(),
-      averageBonusPerReferral: (json['averageBonusPerReferral'] ?? 0).toDouble(),
+      averageBonusPerReferral: (json['averageBonusPerReferral'] ?? 0)
+          .toDouble(),
     );
   }
 }

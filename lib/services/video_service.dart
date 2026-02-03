@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
+import '../config/app_config.dart';
 import 'api_service_v2.dart';
 import 'secure_storage_service.dart';
 
@@ -98,7 +98,8 @@ class VideoModel {
 
 /// Servicio para gestionar videos
 class VideoService {
-  static const String _baseUrl = 'http://localhost:5000';
+  // Usar configuración centralizada
+  static String get _baseUrl => AppConfig.backendUrl;
 
   /// Obtener todos los videos con filtros
   static Future<Map<String, dynamic>> getVideos({
@@ -123,10 +124,9 @@ class VideoService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .get(Uri.parse(url), headers: headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -150,10 +150,9 @@ class VideoService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-      final response = await http.get(
-        Uri.parse('$_baseUrl/videos/$videoId'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .get(Uri.parse('$_baseUrl/videos/$videoId'), headers: headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -204,7 +203,7 @@ class VideoService {
       request.fields['difficulty'] = difficulty;
       if (exerciseName != null) request.fields['exerciseName'] = exerciseName;
       if (accessLevel != null) request.fields['accessLevel'] = accessLevel;
-      
+
       if (muscleGroups != null) {
         request.fields['muscleGroups'] = jsonEncode(muscleGroups);
       }
@@ -273,14 +272,16 @@ class VideoService {
         'Authorization': 'Bearer $token',
       };
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/videos/$videoId/rate'),
-        headers: headers,
-        body: jsonEncode({
-          'rating': rating,
-          if (comment != null) 'comment': comment,
-        }),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/videos/$videoId/rate'),
+            headers: headers,
+            body: jsonEncode({
+              'rating': rating,
+              if (comment != null) 'comment': comment,
+            }),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -298,9 +299,9 @@ class VideoService {
   /// Obtener videos de un usuario
   static Future<List<VideoModel>> getUserVideos(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/videos/uploader/$userId'),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .get(Uri.parse('$_baseUrl/videos/uploader/$userId'))
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -333,11 +334,13 @@ class VideoService {
         'Authorization': 'Bearer $token',
       };
 
-      final response = await http.put(
-        Uri.parse('$_baseUrl/videos/$videoId'),
-        headers: headers,
-        body: jsonEncode(updates),
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .put(
+            Uri.parse('$_baseUrl/videos/$videoId'),
+            headers: headers,
+            body: jsonEncode(updates),
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -366,10 +369,12 @@ class VideoService {
         'Authorization': 'Bearer $token',
       };
 
-      final response = await http.post(
-        Uri.parse('$_baseUrl/videos/$videoId/publish'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .post(
+            Uri.parse('$_baseUrl/videos/$videoId/publish'),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
         throw ApiException(
@@ -390,14 +395,11 @@ class VideoService {
         throw UnauthorizedException();
       }
 
-      final headers = {
-        'Authorization': 'Bearer $token',
-      };
+      final headers = {'Authorization': 'Bearer $token'};
 
-      final response = await http.delete(
-        Uri.parse('$_baseUrl/videos/$videoId'),
-        headers: headers,
-      ).timeout(const Duration(seconds: 30));
+      final response = await http
+          .delete(Uri.parse('$_baseUrl/videos/$videoId'), headers: headers)
+          .timeout(const Duration(seconds: 30));
 
       if (response.statusCode != 200) {
         throw ApiException(

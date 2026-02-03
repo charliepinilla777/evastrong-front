@@ -1,9 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../config/app_config.dart';
 
 class SubscriptionManagementService {
-  static const String baseUrl = 'http://localhost:5000/payments';
-  // Para producción: 'https://tu-servicio.onrender.com/payments'
+  // Usar configuración centralizada
+  static String get baseUrl => AppConfig.paymentsUrl;
 
   String? jwtToken;
 
@@ -48,9 +49,7 @@ class SubscriptionManagementService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $jwtToken',
         },
-        body: jsonEncode({
-          'newPeriod': newPeriod,
-        }),
+        body: jsonEncode({'newPeriod': newPeriod}),
       );
 
       if (response.statusCode == 200) {
@@ -74,9 +73,7 @@ class SubscriptionManagementService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $jwtToken',
         },
-        body: jsonEncode({
-          'newPlan': newPlan,
-        }),
+        body: jsonEncode({'newPlan': newPlan}),
       );
 
       if (response.statusCode == 200) {
@@ -123,7 +120,9 @@ class SubscriptionManagementService {
           'Authorization': 'Bearer $jwtToken',
         },
         body: jsonEncode({
-          'resumeDate': DateTime.now().add(Duration(days: daysToResume)).toIso8601String(),
+          'resumeDate': DateTime.now()
+              .add(Duration(days: daysToResume))
+              .toIso8601String(),
         }),
       );
 

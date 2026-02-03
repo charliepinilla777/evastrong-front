@@ -2,11 +2,11 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'package:flutter/material.dart';
+import '../config/app_config.dart';
 
 class InvoiceService {
-  static const String baseUrl = 'http://localhost:5000/payments';
-  // Para producción: 'https://tu-servicio.onrender.com/payments'
+  // Usar configuración centralizada
+  static String get baseUrl => AppConfig.paymentsUrl;
 
   String? jwtToken;
 
@@ -36,15 +36,11 @@ class InvoiceService {
   }
 
   /// Descargar PDF del recibo
-  Future<File?> downloadReceiptPDF({
-    required String paymentId,
-  }) async {
+  Future<File?> downloadReceiptPDF({required String paymentId}) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/receipt/$paymentId/download'),
-        headers: {
-          'Authorization': 'Bearer $jwtToken',
-        },
+        headers: {'Authorization': 'Bearer $jwtToken'},
       );
 
       if (response.statusCode == 200) {
@@ -94,9 +90,7 @@ class InvoiceService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $jwtToken',
         },
-        body: jsonEncode({
-          'email': email,
-        }),
+        body: jsonEncode({'email': email}),
       );
 
       if (response.statusCode == 200) {
@@ -144,7 +138,9 @@ class Receipt {
       period: json['subscriptionPeriod'] ?? '',
       amount: (json['amount'] ?? 0).toDouble(),
       currency: json['currency'] ?? 'USD',
-      paymentDate: DateTime.parse(json['createdAt'] ?? DateTime.now().toString()),
+      paymentDate: DateTime.parse(
+        json['createdAt'] ?? DateTime.now().toString(),
+      ),
       paymentMethod: json['paymentMethod'] ?? 'unknown',
       status: json['status'] ?? 'pending',
       transactionId: json['transactionId'],

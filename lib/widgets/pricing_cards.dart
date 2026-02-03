@@ -14,7 +14,7 @@ class PricingCard extends StatelessWidget {
   final bool isSelected;
 
   const PricingCard({
-    Key? key,
+    super.key,
     required this.plan,
     required this.title,
     required this.price,
@@ -24,7 +24,7 @@ class PricingCard extends StatelessWidget {
     required this.onPayPalPressed,
     required this.onMercadoPagoPressed,
     this.isSelected = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +145,7 @@ class PricingCard extends StatelessWidget {
                   ],
                 ),
               );
-            }).toList(),
+            }),
             const SizedBox(height: 24),
 
             // Botones de pago

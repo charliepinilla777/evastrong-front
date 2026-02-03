@@ -1,0 +1,5 @@
+{
+  "buildCommand": "echo Web build completed",
+  "outputDirectory": "build/web",
+  "framework": "flutter"
+}
