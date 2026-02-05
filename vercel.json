@@ -1,4 +1,0 @@
-﻿{
-  "outputDirectory": "build/web",
-  "buildCommand": "echo 'Build pre-compiled'"
-}
