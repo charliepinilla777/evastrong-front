@@ -1,4 +1,0 @@
-﻿{
-  "buildCommand": "bash build.sh",
-  "outputDirectory": "build/web"
-}
