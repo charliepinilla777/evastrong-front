@@ -197,6 +197,7 @@ class _RoutineTimerWidgetState extends State<RoutineTimerWidget> {
               AnimatedSlideOdometerNumber(
                 odometerNumber: OdometerNumber(minutes),
                 duration: const Duration(milliseconds: 300),
+                letterWidth: 50,
                 numberTextStyle: GoogleFonts.orbitron(
                   fontSize: 72,
                   fontWeight: FontWeight.bold,
@@ -228,6 +229,7 @@ class _RoutineTimerWidgetState extends State<RoutineTimerWidget> {
               AnimatedSlideOdometerNumber(
                 odometerNumber: OdometerNumber(seconds),
                 duration: const Duration(milliseconds: 300),
+                letterWidth: 50,
                 numberTextStyle: GoogleFonts.orbitron(
                   fontSize: 72,
                   fontWeight: FontWeight.bold,

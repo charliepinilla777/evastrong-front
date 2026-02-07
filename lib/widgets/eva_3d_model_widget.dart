@@ -15,25 +15,19 @@ class _Eva3DModelWidgetState extends State<Eva3DModelWidget> {
   Flutter3DController controller = Flutter3DController();
   
   bool _isLoaded = false;
-  bool _isRotating = false;
   List<String> _availableAnimations = [];
   String? _currentAnimation;
 
   @override
   void initState() {
     super.initState();
-    
-    // Escuchar cuando el modelo se cargue
-    controller.onModelLoaded.addListener(() {
-      setState(() {
-        _isLoaded = controller.onModelLoaded.value;
-      });
-      
-      if (_isLoaded) {
+    // Modelo se carga automáticamente, simular carga después de un tiempo
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          _isLoaded = true;
+        });
         _loadAnimations();
-        // Iniciar rotación automática
-        controller.startRotation(rotationSpeed: 15);
-        setState(() => _isRotating = true);
       }
     });
   }
@@ -45,25 +39,13 @@ class _Eva3DModelWidgetState extends State<Eva3DModelWidget> {
         _availableAnimations = animations ?? [];
         if (_availableAnimations.isNotEmpty) {
           _currentAnimation = _availableAnimations.first;
-          // Reproducir primera animación en loop
-          controller.playAnimation(
-            animationName: _currentAnimation,
-            loopCount: 0, // Loop infinito
-          );
+          // Reproducir primera animación
+          controller.playAnimation(animationName: _currentAnimation);
         }
       });
     } catch (e) {
       print('Error cargando animaciones: $e');
     }
-  }
-
-  void _toggleRotation() {
-    if (_isRotating) {
-      controller.pauseRotation();
-    } else {
-      controller.startRotation(rotationSpeed: 15);
-    }
-    setState(() => _isRotating = !_isRotating);
   }
 
   void _resetView() {
@@ -73,7 +55,6 @@ class _Eva3DModelWidgetState extends State<Eva3DModelWidget> {
 
   @override
   void dispose() {
-    controller.dispose();
     super.dispose();
   }
 
@@ -103,13 +84,9 @@ class _Eva3DModelWidgetState extends State<Eva3DModelWidget> {
             Expanded(
               child: Flutter3DViewer(
                 controller: controller,
-                src: 'assets/models/eva.glb', // Usar modelo eva.glb
-                // Configuración del visor
-                backgroundColor: Colors.transparent,
+                src: 'assets/models/eva.glb',
                 // Controles táctiles habilitados
-                enableTouch: true,
-                // Carga progresiva
-                progressBarColor: EvaColors.vibrantPink,
+                activeGestureInterceptor: true,
               ),
             ),
             
@@ -152,13 +129,6 @@ class _Eva3DModelWidgetState extends State<Eva3DModelWidget> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      // Rotación
-                      _buildControlButton(
-                        icon: _isRotating ? Icons.pause : Icons.rotate_right,
-                        label: _isRotating ? 'Pausar' : 'Rotar',
-                        onPressed: _isLoaded ? _toggleRotation : null,
-                      ),
-                      
                       // Reset vista
                       _buildControlButton(
                         icon: Icons.refresh,
@@ -175,7 +145,6 @@ class _Eva3DModelWidgetState extends State<Eva3DModelWidget> {
                             if (_currentAnimation != null) {
                               controller.playAnimation(
                                 animationName: _currentAnimation,
-                                loopCount: 1,
                               );
                             }
                           },
