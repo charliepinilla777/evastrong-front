@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import '../services/routine_recommendation_service.dart';
 import '../services/user_profile_service.dart';
+import '../services/routine_service.dart';
+import '../services/trial_service.dart';
+import '../services/secure_storage_service.dart';
 import 'profile_setup_screen.dart';
+import 'payments_screen.dart';
 
 class RoutinesScreen extends StatefulWidget {
   const RoutinesScreen({super.key});
@@ -16,6 +20,8 @@ class _RoutinesScreenState extends State<RoutinesScreen>
   bool _isLoading = true;
   PersonalizedRoutine? _personalizedRoutine;
   List<RoutineTemplate> _templates = [];
+  List<Routine> _backendRoutines = [];
+  TrialStatus? _trialStatus;
   String _selectedAgeRange = '18-35';
   String _selectedLevel = 'principiante';
   bool? _selectedKneeSensitive;
@@ -25,7 +31,7 @@ class _RoutinesScreenState extends State<RoutinesScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _userProfileService.initializeProfile();
     _loadData();
   }
@@ -39,6 +45,30 @@ class _RoutinesScreenState extends State<RoutinesScreen>
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
+      // Cargar estado de prueba
+      try {
+        final trialStatus = await TrialService.getTrialStatus();
+        setState(() => _trialStatus = trialStatus);
+      } catch (e) {
+        print('Error al cargar estado de prueba: $e');
+      }
+
+      // Cargar rutinas del backend
+      try {
+        final routinesResponse = await RoutineService.getRoutines(
+          page: 1,
+          limit: 20,
+        );
+        if (routinesResponse['success']) {
+          final List routinesJson = routinesResponse['data']['routines'] ?? [];
+          setState(() {
+            _backendRoutines = routinesJson.map((r) => Routine.fromJson(r)).toList();
+          });
+        }
+      } catch (e) {
+        print('Error al cargar rutinas del backend: $e');
+      }
+
       // Obtener perfil del usuario
       final userProfile = _userProfileService.currentUser;
 
@@ -138,6 +168,7 @@ class _RoutinesScreenState extends State<RoutinesScreen>
           unselectedLabelColor: Colors.white70,
           tabs: const [
             Tab(text: 'Para Ti', icon: Icon(Icons.person)),
+            Tab(text: 'Todas', icon: Icon(Icons.library_books)),
             Tab(text: 'Explorar', icon: Icon(Icons.explore)),
           ],
         ),
@@ -157,9 +188,21 @@ class _RoutinesScreenState extends State<RoutinesScreen>
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [_buildPersonalizedTab(), _buildExploreTab()],
+          : Column(
+              children: [
+                if (_trialStatus != null && TrialService.shouldShowSubscriptionBanner(_trialStatus!))
+                  _buildTrialBanner(),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildPersonalizedTab(),
+                      _buildBackendRoutinesTab(),
+                      _buildExploreTab(),
+                    ],
+                  ),
+                ),
+              ],
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _refreshPersonalizedRoutine,
@@ -676,5 +719,338 @@ class _RoutinesScreenState extends State<RoutinesScreen>
         context,
       ).showSnackBar(SnackBar(content: Text('Error al generar rutina: $e')));
     }
+  }
+
+  Widget _buildTrialBanner() {
+    if (_trialStatus == null) return const SizedBox.shrink();
+
+    final message = TrialService.getStatusMessage(_trialStatus!);
+    final isExpired = _trialStatus!.trialExpired;
+    final daysRemaining = _trialStatus!.daysRemaining;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isExpired
+              ? [Colors.red[400]!, Colors.red[600]!]
+              : daysRemaining <= 2
+                  ? [Colors.orange[400]!, Colors.orange[600]!]
+                  : [Colors.purple[400]!, Colors.purple[600]!],
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isExpired ? Icons.lock : Icons.info_outline,
+            color: Colors.white,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                if (!isExpired && daysRemaining <= 2)
+                  const Text(
+                    '¡Suscríbete ahora para seguir disfrutando!',
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final token = await SecureStorageService.getToken();
+              if (token != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => PaymentsScreen(jwtToken: token)),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: isExpired ? Colors.red : Colors.purple,
+            ),
+            child: Text(isExpired ? 'Suscribirse' : 'Ver Planes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBackendRoutinesTab() {
+    if (_backendRoutines.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.library_books, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'No hay rutinas disponibles',
+              style: TextStyle(fontSize: 18, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _backendRoutines.length,
+      itemBuilder: (context, index) {
+        final routine = _backendRoutines[index];
+        return _buildBackendRoutineCard(routine);
+      },
+    );
+  }
+
+  Widget _buildBackendRoutineCard(Routine routine) {
+    final canAccess = _trialStatus?.hasAccess ?? false;
+    final isLocked = routine.accessLevel == 'premium' && !canAccess;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () {
+          if (isLocked) {
+            _showSubscriptionDialog();
+          } else {
+            _showRoutineDetails(routine);
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.purple[300]!, Colors.purple[600]!],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      isLocked ? Icons.lock : Icons.fitness_center,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                routine.title,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            if (routine.accessLevel == 'premium')
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'PREMIUM',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          routine.description,
+                          style: TextStyle(color: Colors.grey[600]),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _buildRoutineInfoChip(
+                    '${routine.duration} min',
+                    Icons.timer,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildRoutineInfoChip(
+                    routine.difficulty,
+                    Icons.trending_up,
+                  ),
+                  const SizedBox(width: 8),
+                  _buildRoutineInfoChip(
+                    routine.category,
+                    Icons.category,
+                  ),
+                  const Spacer(),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        routine.rating.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoutineInfoChip(String label, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.purple[50],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.purple),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: Colors.purple),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRoutineDetails(Routine routine) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(routine.title),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(routine.description),
+              const SizedBox(height: 16),
+              Text('Instructor: ${routine.instructorName}'),
+              Text('Duración: ${routine.duration} min'),
+              Text('Dificultad: ${routine.difficulty}'),
+              Text('Categoría: ${routine.category}'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 20),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${routine.rating.toStringAsFixed(1)} (${routine.ratingCount} valoraciones)',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 4,
+                children: routine.tags
+                    .map(
+                      (tag) => Chip(
+                        label: Text(tag, style: const TextStyle(fontSize: 12)),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: Implementar ejecución de rutina
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Función de ejecución próximamente'),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+            child: const Text('Comenzar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSubscriptionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Contenido Premium'),
+        content: const Text(
+          'Esta rutina requiere una suscripción premium. ¿Deseas ver los planes disponibles?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final token = await SecureStorageService.getToken();
+              if (token != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => PaymentsScreen(jwtToken: token)),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+            child: const Text('Ver Planes'),
+          ),
+        ],
+      ),
+    );
   }
 }

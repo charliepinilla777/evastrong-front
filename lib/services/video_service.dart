@@ -158,7 +158,7 @@ class VideoService {
         final data = jsonDecode(response.body);
         return VideoModel.fromJson(data['data']);
       } else if (response.statusCode == 404) {
-        throw NotFoundError('Video no encontrado');
+        throw Exception('Video no encontrado');
       } else {
         throw ApiException(
           message: 'Error al obtener video',

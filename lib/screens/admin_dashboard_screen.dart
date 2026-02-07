@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../theme/eva_colors.dart';
 import '../services/effects_3d_service.dart';
 import '../services/admin_service.dart';
+import '../config/app_config.dart';
 import 'admin_login_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -830,6 +832,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 style: const TextStyle(fontSize: 14),
               ),
             ),
+            const SizedBox(height: 12),
+            Effects3DService.button3D(
+              onPressed: _testBackendConnection,
+              gradient: LinearGradient(
+                colors: [Color(0xFF4CAF50), Color(0xFF45A049)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.bug_report, color: Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                  Effects3DService.text3D(
+                    text: 'Test Backend',
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             Effects3DService.text3D(
               text: 'Última actualización',
@@ -866,6 +888,47 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error al enviar recordatorio: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _testBackendConnection() async {
+    try {
+      print('🔍 Testeando conexión con el backend...');
+      print('📍 URL del backend: ${AppConfig.backendUrl}');
+
+      final response = await http
+          .get(Uri.parse('${AppConfig.backendUrl}/health'))
+          .timeout(const Duration(seconds: 30));
+
+      if (mounted) {
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✅ Backend conectado correctamente: ${response.body}'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('⚠️ Backend respondió con código: ${response.statusCode}'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Error al conectar con backend: $e'),
             backgroundColor: Colors.red,
             duration: const Duration(seconds: 5),
           ),

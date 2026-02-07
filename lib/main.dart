@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:animate_gradient/animate_gradient.dart';
+import 'package:animations/animations.dart';
+import 'package:animated_text_kit/animated_text_kit.dart';
+import 'utils/page_transitions.dart';
 import 'services/logo_3d_service.dart';
 import 'services/payment_service.dart';
 import 'config/app_config.dart';
@@ -32,8 +36,28 @@ class EvaStrongApp extends StatelessWidget {
     return MaterialApp(
       title: 'Eva Strong',
       debugShowCheckedModeBanner: false,
-      theme: EvaColors.lightTheme,
-      darkTheme: EvaColors.darkTheme,
+      theme: EvaColors.lightTheme.copyWith(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeThroughPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.windows: FadeThroughPageTransitionsBuilder(),
+            TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.linux: FadeThroughPageTransitionsBuilder(),
+          },
+        ),
+      ),
+      darkTheme: EvaColors.darkTheme.copyWith(
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeThroughPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.windows: FadeThroughPageTransitionsBuilder(),
+            TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.linux: FadeThroughPageTransitionsBuilder(),
+          },
+        ),
+      ),
       themeMode: ThemeMode.system,
       home: const HomeScreen(title: 'Eva Strong'),
       routes: {
@@ -109,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
 
     // Inicializar servicio de pago con token
     _initializePaymentService();
@@ -174,7 +198,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _buildHomeTab(),
           _buildRoutinesTab(),
           _buildContactTab(),
-          _buildTestTab(),
         ],
       ),
       drawer: Drawer(
@@ -320,7 +343,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Tab(icon: Icon(Icons.home), text: 'Inicio'),
           Tab(icon: Icon(Icons.fitness_center), text: 'Rutinas'),
           Tab(icon: Icon(Icons.phone), text: 'Contacto'),
-          Tab(icon: Icon(Icons.settings), text: 'Test'),
         ],
       ),
     );
@@ -329,19 +351,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildHomeTab() {
     return Stack(
       children: [
-        // Background animado con partículas
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                EvaColors.vibrantPink.withOpacity(0.05),
-                EvaColors.cosmicRed.withOpacity(0.03),
-                EvaColors.wellnessPurple.withOpacity(0.05),
-              ],
-            ),
-          ),
+        // Background animado con gradiente
+        AnimateGradient(
+          primaryBeginGeometry: const AlignmentDirectional(0, 1),
+          primaryEndGeometry: const AlignmentDirectional(0, 2),
+          secondaryBeginGeometry: const AlignmentDirectional(2, 0),
+          secondaryEndGeometry: const AlignmentDirectional(0, -0.8),
+          textDirectionForGeometry: TextDirection.rtl,
+          primaryColors: const [
+            Color(0xFFFF69B4), // Rosa vibrante
+            Color(0xFFE91E63), // Rosa intenso
+            Color(0xFFFFFFFF), // Blanco
+          ],
+          secondaryColors: const [
+            Color(0xFFFFFFFF), // Blanco
+            Color(0xFF9C27B0), // Morado
+            Color(0xFF800080), // Morado wellness
+          ],
+          child: Container(), // Container vacío para el gradiente
         ),
 
         // Contenido principal
@@ -352,13 +379,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               const SizedBox(height: 20),
 
+              // Logo animado Eva Strong
+              _buildAnimatedLogo(),
+
+              const SizedBox(height: 30),
+
               // Frase motivacional aleatoria
               _buildMotivationalQuoteSection(),
 
               const SizedBox(height: 20),
-
-              // Espacio reservado para el modelo 3D
-              const SizedBox(height: 120),
 
               const SizedBox(height: 30),
 
@@ -701,6 +730,137 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Text(
         'Test',
         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedLogo() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Logo "EVA STRONG" grande con colores de marca
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // "EVA" en rosa vibrante
+              Text(
+                'EVA',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 72,
+                  fontWeight: FontWeight.w900,
+                  foreground: Paint()
+                    ..shader = LinearGradient(
+                      colors: [
+                        EvaColors.vibrantPink,
+                        EvaColors.cosmicRed,
+                      ],
+                    ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
+                  letterSpacing: 2,
+                  shadows: [
+                    Shadow(
+                      color: EvaColors.vibrantPink.withOpacity(0.5),
+                      blurRadius: 20,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 20),
+              // "STRONG" en morado
+              Text(
+                'STRONG',
+                style: GoogleFonts.playfairDisplay(
+                  fontSize: 72,
+                  fontWeight: FontWeight.w900,
+                  foreground: Paint()
+                    ..shader = LinearGradient(
+                      colors: [
+                        EvaColors.wellnessPurple,
+                        Color(0xFF9C27B0),
+                      ],
+                    ).createShader(const Rect.fromLTWH(0.0, 0.0, 300.0, 70.0)),
+                  letterSpacing: 2,
+                  shadows: [
+                    Shadow(
+                      color: EvaColors.wellnessPurple.withOpacity(0.5),
+                      blurRadius: 20,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 30),
+          
+          // "EVA EVOLUCIONA" con colores animados
+          SizedBox(
+            width: double.infinity,
+            child: Center(
+              child: AnimatedTextKit(
+                repeatForever: true,
+                animatedTexts: [
+                  ColorizeAnimatedText(
+                    'EVA EVOLUCIONA',
+                    textStyle: GoogleFonts.playfairDisplay(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                    ),
+                    colors: [
+                      EvaColors.wellnessPurple,
+                      EvaColors.vibrantPink,
+                      Color(0xFFFFA500), // Naranja
+                      EvaColors.cosmicRed,
+                      EvaColors.vibrantPink,
+                      EvaColors.wellnessPurple,
+                    ],
+                    speed: const Duration(milliseconds: 500),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Texto animado rotativo
+          SizedBox(
+            height: 50,
+            child: DefaultTextStyle(
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                color: EvaColors.textPrimary.withOpacity(0.8),
+                fontStyle: FontStyle.italic,
+                letterSpacing: 1.2,
+              ),
+              child: AnimatedTextKit(
+                repeatForever: true,
+                pause: const Duration(milliseconds: 2000),
+                animatedTexts: [
+                  RotateAnimatedText(
+                    'Transforma la forma en la que los demás te miran',
+                    textAlign: TextAlign.center,
+                  ),
+                  RotateAnimatedText(
+                    'Transforma la forma en la que los demás te tratan',
+                    textAlign: TextAlign.center,
+                  ),
+                  RotateAnimatedText(
+                    'Transforma tu cuerpo, transforma tu vida',
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1075,49 +1235,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             }
           },
-        ),
-
-        const SizedBox(height: 20),
-
-        // Botón de test de conexión
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF4CAF50), // Verde
-                Color(0xFF45A049), // Verde oscuro
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFF4CAF50).withOpacity(0.4),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton.icon(
-            onPressed: _testBackendConnection,
-            icon: const Icon(Icons.bug_report, color: Colors.white),
-            label: Text(
-              '🔍 Test Conexión Backend',
-              style: GoogleFonts.playfairDisplay(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                letterSpacing: 0.5,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            ),
-          ),
         ),
 
         const SizedBox(height: 20),

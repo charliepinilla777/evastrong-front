@@ -132,7 +132,7 @@ class RoutineService {
         final data = jsonDecode(response.body);
         return Routine.fromJson(data['data']);
       } else if (response.statusCode == 404) {
-        throw NotFoundError('Rutina no encontrada');
+        throw Exception('Rutina no encontrada');
       } else {
         throw ApiException(
           message: 'Error al obtener rutina',
@@ -292,7 +292,7 @@ class RoutineService {
         final data = jsonDecode(response.body);
         return Routine.fromJson(data['data']);
       } else if (response.statusCode == 404) {
-        throw NotFoundError('Rutina no encontrada');
+        throw Exception('Rutina no encontrada');
       } else {
         throw ApiException(
           message: 'Error al actualizar rutina',

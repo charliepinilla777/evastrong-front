@@ -56,6 +56,18 @@ dependencies:
   # Animated Background
   animated_background: ^2.0.0
   
+  # Animated Gradient
+  animate_gradient: ^0.0.2
+  
+  # Custom Sign In Buttons
+  custom_signin_buttons: ^1.0.0
+  
+  # Animations (Material Motion)
+  animations: ^2.0.11
+  
+  # Animated Text Kit
+  animated_text_kit: ^4.2.2
+  
   # Google Fonts
   google_fonts: ^6.1.0
 

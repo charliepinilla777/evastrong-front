@@ -4,16 +4,22 @@
 /// para facilitar el mantenimiento y cambios entre ambientes.
 class AppConfig {
   // ========== AMBIENTE ==========
+  /// `true` solo cuando se compila con: --dart-define=APP_DEBUG=true
   static const bool isDebugMode =
-      true; // Cambiar a true para desarrollo local
+      bool.fromEnvironment('APP_DEBUG', defaultValue: false);
 
   // ========== URLs del BACKEND ==========
   // Desarrollo - Backend local
-  static const String _backendDevUrl = 'http://localhost:5000';
+  static const String _backendDevUrl = String.fromEnvironment(
+    'BACKEND_DEV_URL',
+    defaultValue: 'http://localhost:5000',
+  );
 
   // Producción - Backend desplegado en Render
-  static const String _backendProdUrl =
-      'https://evastrong-backend.onrender.com';
+  static const String _backendProdUrl = String.fromEnvironment(
+    'BACKEND_PROD_URL',
+    defaultValue: 'https://evastrong-backend.onrender.com',
+  );
 
   // URL actual según ambiente
   static String get backendUrl =>
