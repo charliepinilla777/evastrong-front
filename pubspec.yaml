@@ -71,6 +71,9 @@ dependencies:
   # Odometer (Temporizador animado)
   odometer: ^3.0.0
   
+  # Flutter 3D Controller (Visualizador 3D interactivo)
+  flutter_3d_controller: ^1.3.1
+  
   # Google Fonts
   google_fonts: ^6.1.0
 
