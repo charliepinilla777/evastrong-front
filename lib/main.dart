@@ -746,12 +746,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // "EVA" en rosa vibrante
+              // "EVA" en rosa vibrante - Fuente elegante y femenina
               Text(
                 'EVA',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 72,
-                  fontWeight: FontWeight.w900,
+                style: GoogleFonts.greatVibes(
+                  fontSize: 84,
+                  fontWeight: FontWeight.w700,
                   foreground: Paint()
                     ..shader = LinearGradient(
                       colors: [
@@ -759,23 +759,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         EvaColors.cosmicRed,
                       ],
                     ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
-                  letterSpacing: 2,
+                  letterSpacing: 3,
                   shadows: [
                     Shadow(
-                      color: EvaColors.vibrantPink.withOpacity(0.5),
-                      blurRadius: 20,
-                      offset: const Offset(0, 5),
+                      color: EvaColors.vibrantPink.withOpacity(0.6),
+                      blurRadius: 25,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 20),
-              // "STRONG" en morado
+              const SizedBox(width: 15),
+              // "STRONG" en morado - Fuente elegante
               Text(
                 'STRONG',
-                style: GoogleFonts.playfairDisplay(
+                style: GoogleFonts.cormorantGaramond(
                   fontSize: 72,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w800,
                   foreground: Paint()
                     ..shader = LinearGradient(
                       colors: [
@@ -783,12 +783,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Color(0xFF9C27B0),
                       ],
                     ).createShader(const Rect.fromLTWH(0.0, 0.0, 300.0, 70.0)),
-                  letterSpacing: 2,
+                  letterSpacing: 4,
                   shadows: [
                     Shadow(
-                      color: EvaColors.wellnessPurple.withOpacity(0.5),
-                      blurRadius: 20,
-                      offset: const Offset(0, 5),
+                      color: EvaColors.wellnessPurple.withOpacity(0.6),
+                      blurRadius: 25,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
@@ -807,10 +807,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 animatedTexts: [
                   ColorizeAnimatedText(
                     'EVA EVOLUCIONA',
-                    textStyle: GoogleFonts.playfairDisplay(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
+                    textStyle: GoogleFonts.dancingScript(
+                      fontSize: 52,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1,
                     ),
                     colors: [
                       EvaColors.wellnessPurple,
