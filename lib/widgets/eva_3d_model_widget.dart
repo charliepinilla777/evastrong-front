@@ -85,8 +85,6 @@ class _Eva3DModelWidgetState extends State<Eva3DModelWidget> {
               child: Flutter3DViewer(
                 controller: controller,
                 src: 'assets/models/eva.glb',
-                // Controles táctiles habilitados
-                activeGestureInterceptor: true,
               ),
             ),
             
