@@ -4,6 +4,7 @@ import '../services/user_profile_service.dart';
 import '../services/routine_service.dart';
 import '../services/trial_service.dart';
 import '../services/secure_storage_service.dart';
+import '../widgets/routine_timer_widget.dart';
 import 'profile_setup_screen.dart';
 import 'payments_screen.dart';
 
@@ -962,61 +963,125 @@ class _RoutinesScreenState extends State<RoutinesScreen>
   void _showRoutineDetails(Routine routine) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(routine.title),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(routine.description),
-              const SizedBox(height: 16),
-              Text('Instructor: ${routine.instructorName}'),
-              Text('Duración: ${routine.duration} min'),
-              Text('Dificultad: ${routine.difficulty}'),
-              Text('Categoría: ${routine.category}'),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  const Icon(Icons.star, color: Colors.amber, size: 20),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${routine.rating.toStringAsFixed(1)} (${routine.ratingCount} valoraciones)',
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 700),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Título
+                Text(
+                  routine.title,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 4,
-                children: routine.tags
-                    .map(
-                      (tag) => Chip(
-                        label: Text(tag, style: const TextStyle(fontSize: 12)),
+                ),
+                const SizedBox(height: 16),
+                
+                // Temporizador
+                RoutineTimerWidget(
+                  totalSeconds: routine.duration * 60, // Convertir minutos a segundos
+                  onComplete: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('¡Rutina completada! 🎉'),
+                        backgroundColor: Colors.green,
                       ),
-                    )
-                    .toList(),
-              ),
-            ],
+                    );
+                  },
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Descripción
+                Text(
+                  routine.description,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+                
+                // Detalles
+                _buildDetailRow(Icons.person, 'Instructor', routine.instructorName),
+                _buildDetailRow(Icons.timer, 'Duración', '${routine.duration} min'),
+                _buildDetailRow(Icons.trending_up, 'Dificultad', routine.difficulty),
+                _buildDetailRow(Icons.category, 'Categoría', routine.category),
+                
+                const SizedBox(height: 12),
+                
+                // Rating
+                Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.amber, size: 20),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${routine.rating.toStringAsFixed(1)} (${routine.ratingCount} valoraciones)',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Tags
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: routine.tags
+                      .map(
+                        (tag) => Chip(
+                          label: Text(tag, style: const TextStyle(fontSize: 11)),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      )
+                      .toList(),
+                ),
+                
+                const SizedBox(height: 20),
+                
+                // Botón cerrar
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Cerrar',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+      ),
+    );
+  }
+  
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: Colors.purple),
+          const SizedBox(width: 8),
+          Text(
+            '$label: ',
+            style: const TextStyle(fontWeight: FontWeight.w600),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implementar ejecución de rutina
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Función de ejecución próximamente'),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
-            child: const Text('Comenzar'),
-          ),
+          Text(value),
         ],
       ),
     );

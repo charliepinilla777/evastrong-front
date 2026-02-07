@@ -68,6 +68,9 @@ dependencies:
   # Animated Text Kit
   animated_text_kit: ^4.2.2
   
+  # Odometer (Temporizador animado)
+  odometer: ^3.0.0
+  
   # Google Fonts
   google_fonts: ^6.1.0
 
