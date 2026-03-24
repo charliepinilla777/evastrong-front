@@ -19,6 +19,8 @@ class PaymentsScreen extends StatefulWidget {
 class _PaymentsScreenState extends State<PaymentsScreen> {
   String selectedCurrency = 'COP'; // 'COP' | 'USD'
   String selectedPeriod = 'monthly'; // 'monthly' | 'annual'
+  String? _pendingPayPalOrderId;   // orderId guardado para capturar tras volver de PayPal
+  String? _pendingWompiReference;  // reference guardada para verificar tras volver de Wompi
 
   @override
   void initState() {
@@ -179,6 +181,20 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
                   const SizedBox(height: 32),
 
+                  // Botón para confirmar pago PayPal pendiente
+                  if (_pendingPayPalOrderId != null)
+                    _buildConfirmPayPalButton(context, paymentProvider),
+
+                  if (_pendingPayPalOrderId != null)
+                    const SizedBox(height: 32),
+
+                  // Botón para confirmar pago Wompi pendiente
+                  if (_pendingWompiReference != null)
+                    _buildConfirmWompiButton(context, paymentProvider),
+
+                  if (_pendingWompiReference != null)
+                    const SizedBox(height: 32),
+
                   // Suscripción Actual
                   if (paymentProvider.hasActiveSubscription)
                     _buildCurrentSubscription(context, paymentProvider),
@@ -215,17 +231,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
             'Soporte por email',
           ],
           isSelected: currentPlan == 'basic',
-          onPayPalPressed: () {
-            _handlePayPalPayment(context, 'basic', selectedPeriod);
-          },
-          onMercadoPagoPressed: () {
-            _handleMercadoPagoPayment(
-              context,
-              'basic',
-              selectedPeriod,
-              selectedCurrency,
-            );
-          },
+          onPayPalPressed: () => _handlePayPalPayment(context, 'basic', selectedPeriod),
+          onMercadoPagoPressed: () => _handleMercadoPagoPayment(context, 'basic', selectedPeriod, selectedCurrency),
+          onWompiPressed: () => _handleWompiPayment(context, 'basic', selectedPeriod),
         ),
         const SizedBox(height: 24),
 
@@ -276,17 +284,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                   'Acceso a contenido exclusivo',
                 ],
                 isSelected: currentPlan == 'premium',
-                onPayPalPressed: () {
-                  _handlePayPalPayment(context, 'premium', selectedPeriod);
-                },
-                onMercadoPagoPressed: () {
-                  _handleMercadoPagoPayment(
-                    context,
-                    'premium',
-                    selectedPeriod,
-                    selectedCurrency,
-                  );
-                },
+                onPayPalPressed: () => _handlePayPalPayment(context, 'premium', selectedPeriod),
+                onMercadoPagoPressed: () => _handleMercadoPagoPayment(context, 'premium', selectedPeriod, selectedCurrency),
+                onWompiPressed: () => _handleWompiPayment(context, 'premium', selectedPeriod),
               ),
             ],
           ),
@@ -338,6 +338,97 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     );
   }
 
+  Widget _buildConfirmPayPalButton(
+    BuildContext context,
+    PaymentProvider paymentProvider,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.pending, color: Colors.blue.shade700),
+              const SizedBox(width: 8),
+              Text(
+                'Pago PayPal pendiente',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Si ya completaste el pago en PayPal, toca el botón para confirmar tu suscripción.',
+            style: TextStyle(fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: paymentProvider.isLoading
+                      ? null
+                      : () => _confirmPayPalCapture(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade700,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: paymentProvider.isLoading
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Ya completé el pago'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () {
+                  setState(() => _pendingPayPalOrderId = null);
+                },
+                child: const Text('Cancelar'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmPayPalCapture(BuildContext context) async {
+    if (_pendingPayPalOrderId == null) return;
+    final paymentProvider = context.read<PaymentProvider>();
+
+    final result = await paymentProvider.capturePayPalOrder(
+      orderId: _pendingPayPalOrderId!,
+    );
+
+    if (!mounted) return;
+
+    if (result != null && result['success'] == true) {
+      setState(() => _pendingPayPalOrderId = null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Suscripción activada exitosamente!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
+  }
+
   Future<void> _handlePayPalPayment(
     BuildContext context,
     String plan,
@@ -351,22 +442,158 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     );
 
     if (result != null && result['approvalLink'] != null) {
+      // Guardar el orderId para capturar cuando el usuario vuelva
+      setState(() => _pendingPayPalOrderId = result['orderId']);
+
       final url = Uri.parse(result['approvalLink']);
       if (await canLaunchUrl(url)) {
-        await launchUrl(
-          url,
-          mode: LaunchMode.externalApplication,
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Completa el pago en PayPal y regresa aquí para confirmarlo'),
+            backgroundColor: Colors.blue,
+            duration: Duration(seconds: 5),
+          ),
         );
-        
-        // Guardar el orderId para capturar después
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Abre PayPal para completar el pago'),
-              backgroundColor: Colors.blue,
-            ),
-          );
-        }
+      }
+    }
+  }
+
+  Widget _buildConfirmWompiButton(
+    BuildContext context,
+    PaymentProvider paymentProvider,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.account_balance, color: Colors.green.shade700),
+              const SizedBox(width: 8),
+              Text(
+                'Pago Wompi pendiente',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Si ya completaste el pago en Wompi (PSE, Nequi, tarjeta), toca el botón para verificar tu suscripcion.',
+            style: TextStyle(fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: paymentProvider.isLoading
+                      ? null
+                      : () => _confirmWompiPayment(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C853),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: paymentProvider.isLoading
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Verificar pago'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () => setState(() => _pendingWompiReference = null),
+                child: const Text('Cancelar'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _confirmWompiPayment(BuildContext context) async {
+    if (_pendingWompiReference == null) return;
+    final paymentProvider = context.read<PaymentProvider>();
+
+    final result = await paymentProvider.verifyWompiTransaction(
+      reference: _pendingWompiReference!,
+    );
+
+    if (!mounted) return;
+
+    if (result != null && result['status'] == 'APPROVED') {
+      setState(() => _pendingWompiReference = null);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('¡Suscripcion activada exitosamente con Wompi!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else if (result != null && result['status'] == 'PENDING') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El pago aun esta en proceso. Intenta en unos segundos.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('El pago no fue aprobado. Intenta de nuevo.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() => _pendingWompiReference = null);
+    }
+  }
+
+  Future<void> _handleWompiPayment(
+    BuildContext context,
+    String plan,
+    String period,
+  ) async {
+    final paymentProvider = context.read<PaymentProvider>();
+
+    final result = await paymentProvider.createWompiSession(
+      plan: plan,
+      period: period,
+    );
+
+    if (result != null && result['checkoutUrl'] != null) {
+      setState(() => _pendingWompiReference = result['reference']);
+
+      final url = Uri.parse(result['checkoutUrl']);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Completa el pago en Wompi (PSE, Nequi, tarjeta) y regresa aqui para verificarlo'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 5),
+          ),
+        );
       }
     }
   }

@@ -185,6 +185,71 @@ class PaymentService {
     }
   }
 
+  /// Crear sesion de pago con Wompi
+  Future<Map<String, dynamic>> createWompiSession({
+    required String plan,
+    required String period,
+  }) async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado. Por favor, inicia sesion.');
+    }
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/wompi/create-session'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+            body: jsonEncode({'plan': plan, 'period': period}),
+          )
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw Exception('Tiempo de espera agotado al crear sesion Wompi');
+            },
+          );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Error: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error al crear sesion Wompi: $e');
+    }
+  }
+
+  /// Verificar estado de transaccion Wompi
+  Future<Map<String, dynamic>> verifyWompiTransaction({
+    required String reference,
+  }) async {
+    if (jwtToken == null || jwtToken!.isEmpty) {
+      throw Exception('Token JWT no inicializado.');
+    }
+
+    try {
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/wompi/transaction/$reference'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $jwtToken',
+            },
+          )
+          .timeout(const Duration(seconds: 30));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Error: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error al verificar transaccion Wompi: $e');
+    }
+  }
+
   /// Obtener estado del pago en Mercado Pago
   Future<Map<String, dynamic>> getMercadoPagoPaymentStatus({
     required String paymentId,

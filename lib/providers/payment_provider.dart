@@ -161,6 +161,68 @@ class PaymentProvider extends ChangeNotifier {
     }
   }
 
+  /// Crear sesion Wompi
+  Future<Map<String, dynamic>?> createWompiSession({
+    required String plan,
+    required String period,
+  }) async {
+    try {
+      isLoading = true;
+      error = null;
+      notifyListeners();
+
+      final result = await _paymentService.createWompiSession(
+        plan: plan,
+        period: period,
+      );
+
+      if (result['success'] == true) {
+        lastPayment = result;
+        isLoading = false;
+        notifyListeners();
+        return result;
+      } else {
+        throw Exception(result['message'] ?? 'Error desconocido');
+      }
+    } catch (e) {
+      error = e.toString();
+      isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Verificar transaccion Wompi
+  Future<Map<String, dynamic>?> verifyWompiTransaction({
+    required String reference,
+  }) async {
+    try {
+      isLoading = true;
+      error = null;
+      notifyListeners();
+
+      final result = await _paymentService.verifyWompiTransaction(
+        reference: reference,
+      );
+
+      if (result['success'] == true) {
+        if (result['status'] == 'APPROVED') {
+          await fetchSubscription();
+        }
+        isLoading = false;
+        notifyListeners();
+        return result;
+      } else {
+        throw Exception(result['message'] ?? 'Error desconocido');
+      }
+    } catch (e) {
+      error = e.toString();
+      isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
   /// Obtener estado de pago
   Future<Map<String, dynamic>?> getMercadoPagoPaymentStatus({
     required String paymentId,

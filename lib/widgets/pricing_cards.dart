@@ -11,6 +11,7 @@ class PricingCard extends StatelessWidget {
   final List<String> features;
   final VoidCallback onPayPalPressed;
   final VoidCallback onMercadoPagoPressed;
+  final VoidCallback onWompiPressed;
   final bool isSelected;
 
   const PricingCard({
@@ -23,6 +24,7 @@ class PricingCard extends StatelessWidget {
     required this.features,
     required this.onPayPalPressed,
     required this.onMercadoPagoPressed,
+    required this.onWompiPressed,
     this.isSelected = false,
   });
 
@@ -214,6 +216,37 @@ class PricingCard extends StatelessWidget {
                       SizedBox(width: 8),
                       Text(
                         'Pagar con Mercado Pago',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Wompi Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: paymentProvider.isLoading ? null : onWompiPressed,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C853),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.account_balance),
+                      SizedBox(width: 8),
+                      Text(
+                        'Pagar con Wompi',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
