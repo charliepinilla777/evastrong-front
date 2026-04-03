@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../theme/eva_colors.dart';
 import '../services/effects_3d_service.dart';
 import '../services/user_profile_service.dart';
@@ -53,7 +54,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         _isLoading = false;
       });
 
-      _showSuccessMessage('Foto de perfil actualizada');
+      _showSuccessMessage(AppStrings.of(context).profilePhotoUpdated);
     }
   }
 
@@ -70,25 +71,25 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         _isLoading = false;
       });
 
-      _showSuccessMessage('Foto de perfil actualizada');
+      _showSuccessMessage(AppStrings.of(context).profilePhotoUpdated);
     }
   }
 
   Future<void> _saveProfile() async {
     if (_nameController.text.trim().isEmpty) {
-      _showErrorMessage('Por favor ingresa tu nombre');
+      _showErrorMessage(AppStrings.of(context).pleaseEnterName);
       return;
     }
 
     final age = int.tryParse(_ageController.text);
     if (age == null || age < 13 || age > 120) {
-      _showErrorMessage('Por favor ingresa una edad válida (13-120)');
+      _showErrorMessage(AppStrings.of(context).invalidAge);
       return;
     }
 
     final performance = double.tryParse(_performanceController.text);
     if (performance == null || performance < 0 || performance > 100) {
-      _showErrorMessage('Por favor ingresa un desempeño válido (0-100)');
+      _showErrorMessage(AppStrings.of(context).invalidPerformance);
       return;
     }
 
@@ -106,7 +107,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       _isLoading = false;
     });
 
-    _showSuccessMessage('Perfil actualizado correctamente');
+    _showSuccessMessage(AppStrings.of(context).profileUpdated);
   }
 
   void _showSuccessMessage(String message) {
@@ -147,7 +148,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Effects3DService.text3D(
-                text: 'Seleccionar Foto',
+                text: AppStrings.of(context).selectPhoto,
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -173,7 +174,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                         const SizedBox(height: 8),
                         Effects3DService.text3D(
-                          text: 'Galería',
+                          text: AppStrings.of(context).gallery,
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],
@@ -194,7 +195,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         ),
                         const SizedBox(height: 8),
                         Effects3DService.text3D(
-                          text: 'Cámara',
+                          text: AppStrings.of(context).camera,
                           style: const TextStyle(fontSize: 12),
                         ),
                       ],
@@ -216,7 +217,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     return Scaffold(
       appBar: Effects3DService.appBar3D(
-        title: 'Mi Perfil',
+        title: AppStrings.of(context).myProfile,
         gradient: Effects3DService.primaryGradient3D,
       ),
       body: SingleChildScrollView(
@@ -257,7 +258,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                     const SizedBox(height: 16),
                     Effects3DService.text3D(
-                      text: 'Toca para cambiar tu foto',
+                      text: AppStrings.of(context).tapToChangePhoto,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -281,7 +282,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Effects3DService.text3D(
-                      text: 'Información Personal',
+                      text: AppStrings.of(context).personalInfo,
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -293,9 +294,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     // Campo de nombre
                     _buildTextField(
                       controller: _nameController,
-                      label: 'Nombre',
+                      label: AppStrings.of(context).name,
                       icon: Icons.person,
-                      hintText: 'Tu nombre completo',
+                      hintText: AppStrings.of(context).nameHintFull,
                     ),
 
                     const SizedBox(height: 16),
@@ -303,9 +304,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     // Campo de edad
                     _buildTextField(
                       controller: _ageController,
-                      label: 'Edad',
+                      label: AppStrings.of(context).age,
                       icon: Icons.cake,
-                      hintText: 'Tu edad',
+                      hintText: AppStrings.of(context).ageHint,
                       keyboardType: TextInputType.number,
                     ),
 
@@ -314,9 +315,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     // Campo de desempeño
                     _buildTextField(
                       controller: _performanceController,
-                      label: 'Desempeño',
+                      label: AppStrings.of(context).performance,
                       icon: Icons.trending_up,
-                      hintText: 'Tu nivel de desempeño (0-100)',
+                      hintText: AppStrings.of(context).performanceHint,
                       keyboardType: TextInputType.number,
                     ),
 
@@ -325,8 +326,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     // Indicador de desempeño
                     if (user != null) ...[
                       Effects3DService.text3D(
-                        text:
-                            'Nivel de Desempeño: ${_profileService.getPerformanceLevel()}',
+                        text: AppStrings.of(context).performanceLevelLabel(_profileService.getPerformanceLevel()),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -353,21 +353,24 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             const SizedBox(height: 24),
 
             // Botón de guardar
-            Effects3DService.button3D(
-              onPressed: _isLoading ? () {} : _saveProfile,
-              gradient: Effects3DService.primaryGradient3D,
-              shadows: Effects3DService.elevatedShadow3D,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Effects3DService.text3D(
-                      text: 'Guardar Cambios',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+            Opacity(
+              opacity: _isLoading ? 0.5 : 1.0,
+              child: Effects3DService.button3D(
+                onPressed: _isLoading ? () {} : _saveProfile,
+                gradient: Effects3DService.primaryGradient3D,
+                shadows: Effects3DService.elevatedShadow3D,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Effects3DService.text3D(
+                        text: AppStrings.of(context).save,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        shadows: Effects3DService.bigTextShadow3D,
                       ),
-                      shadows: Effects3DService.bigTextShadow3D,
-                    ),
+              ),
             ),
 
             const SizedBox(height: 32),

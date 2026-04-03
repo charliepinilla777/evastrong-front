@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../theme/eva_colors.dart';
 
 class CommunityScreen extends StatefulWidget {
@@ -64,7 +65,7 @@ class _CommunityScreenState extends State<CommunityScreen>
     return Scaffold(
       backgroundColor: EvaColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Comunidad'),
+        title: Text(AppStrings.of(context).communityTitle),
         backgroundColor: EvaColors.vibrantPink,
         foregroundColor: EvaColors.textOnVibrant,
         elevation: 8,
@@ -73,10 +74,10 @@ class _CommunityScreenState extends State<CommunityScreen>
           indicatorColor: EvaColors.textOnVibrant,
           labelColor: EvaColors.textOnVibrant,
           unselectedLabelColor: EvaColors.textOnVibrant.withOpacity(0.7),
-          tabs: const [
-            Tab(text: 'Feed', icon: Icon(Icons.home)),
-            Tab(text: 'Grupos', icon: Icon(Icons.group)),
-            Tab(text: 'Retos', icon: Icon(Icons.emoji_events)),
+          tabs: [
+            Tab(text: AppStrings.of(context).communityTabFeed, icon: const Icon(Icons.home)),
+            Tab(text: AppStrings.of(context).communityTabGroups, icon: const Icon(Icons.group)),
+            Tab(text: AppStrings.of(context).communityTabChallenges, icon: const Icon(Icons.emoji_events)),
           ],
         ),
       ),
@@ -107,39 +108,12 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Widget _buildGroupsTab() {
+    final s = AppStrings.of(context);
     final groups = [
-      CommunityGroup(
-        id: '1',
-        name: 'Principiantes Eva Strong',
-        description: 'Para quienes empiezan su transformación',
-        members: 1234,
-        icon: '🌱',
-        isJoined: true,
-      ),
-      CommunityGroup(
-        id: '2',
-        name: 'Rutinas Matutinas',
-        description: 'Grupo para madrugadores motivados',
-        members: 856,
-        icon: '🌅',
-        isJoined: false,
-      ),
-      CommunityGroup(
-        id: '3',
-        name: 'Mamás Fuertes',
-        description: 'Apoyo y motivación para mamás fitness',
-        members: 2341,
-        icon: '👩‍👧‍👦',
-        isJoined: false,
-      ),
-      CommunityGroup(
-        id: '4',
-        name: 'Atletas Eva Strong',
-        description: 'Para los más dedicados',
-        members: 567,
-        icon: '🏆',
-        isJoined: false,
-      ),
+      CommunityGroup(id: '1', name: s.groupBeginners, description: s.groupBeginnersDesc, members: 1234, icon: '🌱', isJoined: true),
+      CommunityGroup(id: '2', name: s.groupMorningRoutines, description: s.groupMorningDesc, members: 856, icon: '🌅', isJoined: false),
+      CommunityGroup(id: '3', name: s.groupStrongMoms, description: s.groupStrongMomsDesc, members: 2341, icon: '👩‍👧‍👦', isJoined: false),
+      CommunityGroup(id: '4', name: s.groupAthletes, description: s.groupAthletesDesc, members: 567, icon: '🏆', isJoined: false),
     ];
 
     return ListView.builder(
@@ -153,37 +127,11 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   Widget _buildChallengesTab() {
+    final s = AppStrings.of(context);
     final challenges = [
-      Challenge(
-        id: '1',
-        title: 'Reto 30 Días',
-        description: 'Completa una rutina cada día por 30 días',
-        participants: 4521,
-        daysLeft: 15,
-        difficulty: 'Media',
-        icon: '🔥',
-        isJoined: true,
-      ),
-      Challenge(
-        id: '2',
-        title: 'Reto 100 Sentadillas',
-        description: 'Haz 100 sentadillas en un día',
-        participants: 892,
-        daysLeft: 7,
-        difficulty: 'Alta',
-        icon: '💪',
-        isJoined: false,
-      ),
-      Challenge(
-        id: '3',
-        title: 'Reto Hidratación',
-        description: 'Bebe 8 vasos de agua diarios por 21 días',
-        participants: 1203,
-        daysLeft: 12,
-        difficulty: 'Baja',
-        icon: '💧',
-        isJoined: false,
-      ),
+      Challenge(id: '1', title: s.challenge30Days, description: s.challenge30DaysDesc, participants: 4521, daysLeft: 15, difficulty: s.difficultyMedium, icon: '🔥', isJoined: true),
+      Challenge(id: '2', title: s.challenge100Squats, description: s.challenge100SquatsDesc, participants: 892, daysLeft: 7, difficulty: s.difficultyHigh, icon: '💪', isJoined: false),
+      Challenge(id: '3', title: s.challengeHydration, description: s.challengeHydrationDesc, participants: 1203, daysLeft: 12, difficulty: s.difficultyLow, icon: '💧', isJoined: false),
     ];
 
     return ListView.builder(
@@ -338,7 +286,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${group.members} miembros',
+                    AppStrings.of(context).membersCount(group.members),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: EvaColors.textPrimary.withOpacity(0.6),
                     ),
@@ -356,7 +304,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                     ? Colors.black
                     : EvaColors.textOnVibrant,
               ),
-              child: Text(group.isJoined ? 'Unido' : 'Unirse'),
+              child: Text(group.isJoined ? AppStrings.of(context).joinedLabel : AppStrings.of(context).joinLabel),
             ),
           ],
         ),
@@ -422,13 +370,13 @@ class _CommunityScreenState extends State<CommunityScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Dificultad: ${challenge.difficulty}',
+                      AppStrings.of(context).difficultyLabel(challenge.difficulty),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: EvaColors.textPrimary.withOpacity(0.7),
                       ),
                     ),
                     Text(
-                      '${challenge.participants} participantes',
+                      AppStrings.of(context).participantsLabel(challenge.participants),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: EvaColors.textPrimary.withOpacity(0.7),
                       ),
@@ -439,7 +387,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${challenge.daysLeft} días',
+                      AppStrings.of(context).daysLeftLabel(challenge.daysLeft),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: EvaColors.vibrantPink,
                         fontWeight: FontWeight.bold,
@@ -455,7 +403,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                             ? Colors.black
                             : EvaColors.textOnVibrant,
                       ),
-                      child: Text(challenge.isJoined ? 'Unido' : 'Unirse'),
+                      child: Text(challenge.isJoined ? AppStrings.of(context).joinedLabel : AppStrings.of(context).joinLabel),
                     ),
                   ],
                 ),
@@ -472,13 +420,13 @@ class _CommunityScreenState extends State<CommunityScreen>
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {
-      return 'Ahora';
+      return AppStrings.of(context).justNow;
     } else if (difference.inHours < 1) {
-      return 'Hace ${difference.inMinutes} min';
+      return AppStrings.of(context).minsAgoLong(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return 'Hace ${difference.inHours} h';
+      return AppStrings.of(context).hoursAgoLong(difference.inHours);
     } else {
-      return 'Hace ${difference.inDays} días';
+      return AppStrings.of(context).daysAgoLong(difference.inDays);
     }
   }
 
@@ -502,12 +450,12 @@ class _CommunityScreenState extends State<CommunityScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Comentarios (${post.comments})'),
-        content: const Text('Función de comentarios próximamente...'),
+        title: Text(AppStrings.of(context).commentsCount(post.comments)),
+        content: Text(AppStrings.of(context).commentsComingSoon),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+            child: Text(AppStrings.of(context).close),
           ),
         ],
       ),
@@ -517,7 +465,7 @@ class _CommunityScreenState extends State<CommunityScreen>
   void _sharePost(CommunityPost post) {
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Compartir próximamente...')));
+    ).showSnackBar(SnackBar(content: Text(AppStrings.of(context).shareComingSoon)));
   }
 
   void _toggleGroupMembership(CommunityGroup group) {
@@ -548,22 +496,22 @@ class _CommunityScreenState extends State<CommunityScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Crear Publicación'),
-        content: const TextField(
+        title: Text(AppStrings.of(context).createPost),
+        content: TextField(
           decoration: InputDecoration(
-            hintText: '¿Qué quieres compartir?',
-            border: OutlineInputBorder(),
+            hintText: AppStrings.of(context).whatToShare,
+            border: const OutlineInputBorder(),
           ),
           maxLines: 4,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(AppStrings.of(context).cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Publicar'),
+            child: Text(AppStrings.of(context).publish),
           ),
         ],
       ),

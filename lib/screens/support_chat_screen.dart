@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../theme/eva_colors.dart';
 
 class SupportChatScreen extends StatefulWidget {
@@ -13,19 +14,27 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   bool _isTyping = false;
+  bool _welcomeAdded = false;
 
   @override
   void initState() {
     super.initState();
-    _addWelcomeMessage();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_welcomeAdded) {
+      _welcomeAdded = true;
+      _addWelcomeMessage();
+    }
   }
 
   void _addWelcomeMessage() {
     setState(() {
       _messages.add(
         ChatMessage(
-          text:
-              '¡Hola! 👋 Soy tu asistente virtual de Eva Strong.\n\n¿En qué puedo ayudarte hoy?\n\n💪 Puedo ayudarte con:\n• Rutinas y ejercicios\n• Problemas técnicos\n• Configuración de perfil\n• Pagos y suscripciones',
+          text: AppStrings.of(context).botWelcome,
           isUser: false,
           timestamp: DateTime.now(),
         ),
@@ -70,69 +79,28 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   String _generateResponse(String userMessage) {
     final lowerMessage = userMessage.toLowerCase();
+    final s = AppStrings.of(context);
 
-    // Respuestas inteligentes basadas en palabras clave
-    if (lowerMessage.contains('rutina') || lowerMessage.contains('ejercicio')) {
-      return '''💪 **Sobre Rutinas:**
-
-Puedes acceder a tus rutinas personalizadas desde:
-• Menú lateral → "Mis Rutinas"
-• Pestaña "Rutinas" en la pantalla principal
-
-¿Necesitas ayuda con algo específico de tu rutina?''';
+    if (lowerMessage.contains('rutina') || lowerMessage.contains('ejercicio') ||
+        lowerMessage.contains('routine') || lowerMessage.contains('exercise')) {
+      return s.botRoutineHelp;
     }
-
-    if (lowerMessage.contains('pago') || lowerMessage.contains('suscripción')) {
-      return '''💳 **Sobre Pagos:**
-
-Para gestionar tu suscripción:
-1. Ve a tu perfil
-2. Selecciona "Configuración de pagos"
-3. Elige tu plan (Mensual/Anual)
-
-¿Problemas con un pago? Contacta a soporte@evastrong.com''';
+    if (lowerMessage.contains('pago') || lowerMessage.contains('suscripción') ||
+        lowerMessage.contains('payment') || lowerMessage.contains('subscription')) {
+      return s.botPaymentHelp;
     }
-
-    if (lowerMessage.contains('perfil') || lowerMessage.contains('cuenta')) {
-      return '''👤 **Sobre tu Perfil:**
-
-Configura tu perfil completo:
-• Menú lateral → "Configurar Perfil"
-• Agrega tu edad, nivel y objetivos
-• Esto personalizará tus rutinas
-
-¿Qué sección de tu perfil quieres ajustar?''';
+    if (lowerMessage.contains('perfil') || lowerMessage.contains('cuenta') ||
+        lowerMessage.contains('profile') || lowerMessage.contains('account')) {
+      return s.botProfileHelp;
     }
-
-    if (lowerMessage.contains('hola') || lowerMessage.contains('buenos días')) {
-      return '''¡Hola! 😊 ¿Cómo estás hoy?
-
-Recuerda que la consistencia es clave para tus objetivos.
-¿Qué rutina vas a hacer hoy? 💪''';
+    if (lowerMessage.contains('hola') || lowerMessage.contains('buenos días') ||
+        lowerMessage.contains('hello') || lowerMessage.contains('hi')) {
+      return s.botHelloResponse;
     }
-
-    if (lowerMessage.contains('gracias')) {
-      return '''🌟 **¡De nada!**
-
-Estoy aquí para ayudarte a alcanzar tus metas.
-¡Sigue adelante, tú puedes! 💪✨
-
-¿Necesitas algo más?''';
+    if (lowerMessage.contains('gracias') || lowerMessage.contains('thank')) {
+      return s.botThanksResponse;
     }
-
-    // Respuesta por defecto
-    return '''🤔 **Entiendo tu consulta.**
-
-Puedo ayudarte con:
-• 📋 Rutinas y ejercicios personalizados
-• 💳 Pagos y suscripciones  
-• 👤 Configuración de perfil
-• 🔧 Problemas técnicos
-• 📈 Seguimiento de progreso
-
-¿Podrías darme más detalles sobre lo que necesitas?
-
-O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
+    return s.botDefaultResponse;
   }
 
   void _scrollToBottom() {
@@ -159,7 +127,7 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
     return Scaffold(
       backgroundColor: EvaColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Chat de Soporte'),
+        title: Text(AppStrings.of(context).supportChatTitle),
         backgroundColor: EvaColors.vibrantPink,
         foregroundColor: EvaColors.textOnVibrant,
         elevation: 8,
@@ -187,7 +155,7 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Soporte disponible 24/7 • Respuesta rápida garantizada',
+                    AppStrings.of(context).supportAvailable247,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: EvaColors.textPrimary,
                       fontWeight: FontWeight.w600,
@@ -234,7 +202,7 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
                   child: TextField(
                     controller: _messageController,
                     decoration: InputDecoration(
-                      hintText: 'Escribe tu mensaje...',
+                      hintText: AppStrings.of(context).writeMsgHint,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25),
                         borderSide: BorderSide(color: EvaColors.vibrantPink),
@@ -434,11 +402,11 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
     final difference = now.difference(timestamp);
 
     if (difference.inMinutes < 1) {
-      return 'Ahora';
+      return AppStrings.of(context).justNow;
     } else if (difference.inHours < 1) {
-      return 'Hace ${difference.inMinutes} min';
+      return AppStrings.of(context).minsAgoLong(difference.inMinutes);
     } else if (difference.inDays < 1) {
-      return 'Hace ${difference.inHours} h';
+      return AppStrings.of(context).hoursAgoLong(difference.inHours);
     } else {
       return '${timestamp.day}/${timestamp.month} ${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
     }
@@ -452,7 +420,7 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
           children: [
             Icon(Icons.info, color: EvaColors.vibrantPink),
             const SizedBox(width: 8),
-            const Text('Info del Chat'),
+            Text(AppStrings.of(context).chatInfoTitle),
           ],
         ),
         content: Column(
@@ -460,35 +428,35 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '🤖 **Asistente Virtual**',
+              AppStrings.of(context).virtualAssistant,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Text('Respuesta automática inteligente'),
+            Text(AppStrings.of(context).autoResponse),
             const SizedBox(height: 16),
             Text(
-              '👨‍💼 **Soporte Humano**',
+              AppStrings.of(context).humanSupport,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Text('Disponible Lunes a Viernes, 9am-6pm'),
+            Text(AppStrings.of(context).humanSupportHours),
             const SizedBox(height: 8),
-            Text('Email: soporte@evastrong.com'),
+            const Text('Email: soporte@evastrong.com'),
             const SizedBox(height: 16),
             Text(
-              '⚡ **Tiempo de respuesta**',
+              AppStrings.of(context).responseTimeTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
-            Text('Chat: Inmediato'),
-            Text('Email: 2-4 horas'),
+            Text(AppStrings.of(context).chatImmediate),
+            Text(AppStrings.of(context).emailResponseTime),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cerrar',
+              AppStrings.of(context).close,
               style: TextStyle(color: EvaColors.vibrantPink),
             ),
           ),
@@ -512,7 +480,7 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Respuestas Rápidas',
+              AppStrings.of(context).quickReplies,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: EvaColors.textPrimary,
                 fontWeight: FontWeight.bold,
@@ -523,12 +491,12 @@ O si prefieres, puedes escribir "ayuda" para ver todas las opciones.''';
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildQuickChip('Ayuda con rutinas'),
-                _buildQuickChip('Problemas de pago'),
-                _buildQuickChip('Configurar perfil'),
-                _buildQuickChip('Error técnico'),
-                _buildQuickChip('Cancelar suscripción'),
-                _buildQuickChip('Contactar humano'),
+                _buildQuickChip(AppStrings.of(context).quickRepliesHelpRoutines),
+                _buildQuickChip(AppStrings.of(context).quickRepliesPaymentIssue),
+                _buildQuickChip(AppStrings.of(context).quickRepliesSetupProfile),
+                _buildQuickChip(AppStrings.of(context).quickRepliesTechError),
+                _buildQuickChip(AppStrings.of(context).quickRepliesCancelSub),
+                _buildQuickChip(AppStrings.of(context).quickRepliesContactHuman),
               ],
             ),
             const SizedBox(height: 20),

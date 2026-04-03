@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../providers/payment_provider.dart';
 import '../widgets/pricing_cards.dart';
+import '../l10n/app_strings.dart';
 
 class PaymentsScreen extends StatefulWidget {
   final String jwtToken;
@@ -35,9 +36,10 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
       await paymentProvider.fetchSubscription();
     } catch (e) {
       if (mounted) {
+        final s = AppStrings.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al cargar suscripción: $e'),
+            content: Text('${s.errorLoadingSub}: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -47,9 +49,10 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Planes de Suscripción'),
+        title: Text(s.subscriptionPlans),
         centerTitle: true,
         backgroundColor: Colors.purple.shade700,
       ),
@@ -61,17 +64,16 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Encabezado
                   const SizedBox(height: 16),
                   Text(
-                    'Elige tu plan perfecto',
+                    s.choosePlan,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Acceso a entrenamientos ilimitados y contenido exclusivo',
+                    s.choosePlanSub,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.grey.shade600,
                         ),
@@ -85,29 +87,16 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Moneda',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
+                            Text(s.currency, style: Theme.of(context).textTheme.bodySmall),
                             const SizedBox(height: 8),
                             DropdownButton<String>(
                               value: selectedCurrency,
                               isExpanded: true,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'COP',
-                                  child: Text('💰 Pesos Colombianos (COP)'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'USD',
-                                  child: Text('💵 Dólares (USD)'),
-                                ),
+                              items: [
+                                DropdownMenuItem(value: 'COP', child: Text(s.copCurrency)),
+                                DropdownMenuItem(value: 'USD', child: Text(s.usdCurrency)),
                               ],
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedCurrency = value ?? 'COP';
-                                });
-                              },
+                              onChanged: (value) => setState(() => selectedCurrency = value ?? 'COP'),
                             ),
                           ],
                         ),
@@ -117,29 +106,16 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Período',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
+                            Text(s.period, style: Theme.of(context).textTheme.bodySmall),
                             const SizedBox(height: 8),
                             DropdownButton<String>(
                               value: selectedPeriod,
                               isExpanded: true,
-                              items: const [
-                                DropdownMenuItem(
-                                  value: 'monthly',
-                                  child: Text('Mensual'),
-                                ),
-                                DropdownMenuItem(
-                                  value: 'annual',
-                                  child: Text('Anual'),
-                                ),
+                              items: [
+                                DropdownMenuItem(value: 'monthly', child: Text(s.monthly)),
+                                DropdownMenuItem(value: 'annual', child: Text(s.annual)),
                               ],
-                              onChanged: (value) {
-                                setState(() {
-                                  selectedPeriod = value ?? 'monthly';
-                                });
-                              },
+                              onChanged: (value) => setState(() => selectedPeriod = value ?? 'monthly'),
                             ),
                           ],
                         ),
@@ -223,13 +199,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               ? (selectedPeriod == 'monthly' ? '39.900' : '399.900')
               : (selectedPeriod == 'monthly' ? '9.99' : '99.99'),
           currency: selectedCurrency,
-          period: selectedPeriod == 'monthly' ? 'mes' : 'año',
-          features: [
-            'Acceso a 50+ entrenamientos',
-            'Seguimiento de progreso',
-            'Comunidad exclusiva',
-            'Soporte por email',
-          ],
+          period: selectedPeriod == 'monthly' ? s.perMonth : s.perYear,
+          features: s.basicFeatures,
           isSelected: currentPlan == 'basic',
           onPayPalPressed: () => _handlePayPalPayment(context, 'basic', selectedPeriod),
           onMercadoPagoPressed: () => _handleMercadoPagoPayment(context, 'basic', selectedPeriod, selectedCurrency),
@@ -257,9 +228,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                     color: Colors.amber,
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    'Más Popular',
-                    style: TextStyle(
+                  child: Text(
+                    s.mostPopular,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -274,15 +245,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                     ? (selectedPeriod == 'monthly' ? '79.900' : '799.900')
                     : (selectedPeriod == 'monthly' ? '19.99' : '199.99'),
                 currency: selectedCurrency,
-                period: selectedPeriod == 'monthly' ? 'mes' : 'año',
-                features: [
-                  'Acceso a 500+ entrenamientos',
-                  'Seguimiento avanzado de progreso',
-                  'Clases en vivo semanales',
-                  'Planes personalizados',
-                  'Soporte prioritario 24/7',
-                  'Acceso a contenido exclusivo',
-                ],
+                period: selectedPeriod == 'monthly' ? s.perMonth : s.perYear,
+                features: s.premiumFeatures,
                 isSelected: currentPlan == 'premium',
                 onPayPalPressed: () => _handlePayPalPayment(context, 'premium', selectedPeriod),
                 onMercadoPagoPressed: () => _handleMercadoPagoPayment(context, 'premium', selectedPeriod, selectedCurrency),
@@ -290,6 +254,24 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               ),
             ],
           ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Plan Elite
+        PricingCard(
+          plan: 'exclusive',
+          title: 'Plan Elite',
+          price: selectedCurrency == 'COP'
+              ? (selectedPeriod == 'monthly' ? '119.900' : '1.199.900')
+              : (selectedPeriod == 'monthly' ? '29.99' : '299.99'),
+          currency: selectedCurrency,
+          period: selectedPeriod == 'monthly' ? s.perMonth : s.perYear,
+          features: s.eliteFeatures,
+          isSelected: currentPlan == 'exclusive',
+          onPayPalPressed: () => _handlePayPalPayment(context, 'exclusive', selectedPeriod),
+          onMercadoPagoPressed: () => _handleMercadoPagoPayment(context, 'exclusive', selectedPeriod, selectedCurrency),
+          onWompiPressed: () => _handleWompiPayment(context, 'exclusive', selectedPeriod),
         ),
       ],
     );
@@ -311,7 +293,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                 Icon(Icons.check_circle, color: Colors.green.shade700),
                 const SizedBox(width: 12),
                 Text(
-                  'Suscripción Activa',
+                  AppStrings.of(context).activeSubscription,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -322,13 +304,13 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Plan: ${paymentProvider.currentPlan?.toUpperCase()}',
+              AppStrings.of(context).planLabel(paymentProvider.currentPlan ?? ''),
               style: const TextStyle(fontSize: 14),
             ),
             if (paymentProvider.subscriptionEndDate != null) ...[
               const SizedBox(height: 8),
               Text(
-                'Vencimiento: ${paymentProvider.subscriptionEndDate}',
+                AppStrings.of(context).expirationLabel(_formatDate(paymentProvider.subscriptionEndDate!)),
                 style: const TextStyle(fontSize: 14),
               ),
             ],
@@ -357,7 +339,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               Icon(Icons.pending, color: Colors.blue.shade700),
               const SizedBox(width: 8),
               Text(
-                'Pago PayPal pendiente',
+                AppStrings.of(context).paypalPending,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.blue.shade700,
@@ -366,9 +348,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Si ya completaste el pago en PayPal, toca el botón para confirmar tu suscripción.',
-            style: TextStyle(fontSize: 13),
+          Text(
+            AppStrings.of(context).paypalPendingMsg,
+            style: const TextStyle(fontSize: 13),
           ),
           const SizedBox(height: 12),
           Row(
@@ -391,7 +373,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Ya completé el pago'),
+                      : Text(AppStrings.of(context).iAlreadyPaid),
                 ),
               ),
               const SizedBox(width: 8),
@@ -399,7 +381,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                 onPressed: () {
                   setState(() => _pendingPayPalOrderId = null);
                 },
-                child: const Text('Cancelar'),
+                child: Text(AppStrings.of(context).cancel),
               ),
             ],
           ),
@@ -421,8 +403,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     if (result != null && result['success'] == true) {
       setState(() => _pendingPayPalOrderId = null);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Suscripción activada exitosamente!'),
+        SnackBar(
+          content: Text(AppStrings.of(context).subscriptionActivated),
           backgroundColor: Colors.green,
         ),
       );
@@ -452,10 +434,10 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Completa el pago en PayPal y regresa aquí para confirmarlo'),
+          SnackBar(
+            content: Text(AppStrings.of(context).completePayPalReturn),
             backgroundColor: Colors.blue,
-            duration: Duration(seconds: 5),
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -481,7 +463,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               Icon(Icons.account_balance, color: Colors.green.shade700),
               const SizedBox(width: 8),
               Text(
-                'Pago Wompi pendiente',
+                AppStrings.of(context).wompiPending,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.green.shade700,
@@ -490,9 +472,9 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Si ya completaste el pago en Wompi (PSE, Nequi, tarjeta), toca el botón para verificar tu suscripcion.',
-            style: TextStyle(fontSize: 13),
+          Text(
+            AppStrings.of(context).wompiPendingMsg,
+            style: const TextStyle(fontSize: 13),
           ),
           const SizedBox(height: 12),
           Row(
@@ -515,13 +497,13 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Verificar pago'),
+                      : Text(AppStrings.of(context).verifyPayment),
                 ),
               ),
               const SizedBox(width: 8),
               TextButton(
                 onPressed: () => setState(() => _pendingWompiReference = null),
-                child: const Text('Cancelar'),
+                child: Text(AppStrings.of(context).cancel),
               ),
             ],
           ),
@@ -543,22 +525,22 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     if (result != null && result['status'] == 'APPROVED') {
       setState(() => _pendingWompiReference = null);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('¡Suscripcion activada exitosamente con Wompi!'),
+        SnackBar(
+          content: Text(AppStrings.of(context).wompiActivated),
           backgroundColor: Colors.green,
         ),
       );
     } else if (result != null && result['status'] == 'PENDING') {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El pago aun esta en proceso. Intenta en unos segundos.'),
+        SnackBar(
+          content: Text(AppStrings.of(context).paymentPending),
           backgroundColor: Colors.orange,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('El pago no fue aprobado. Intenta de nuevo.'),
+        SnackBar(
+          content: Text(AppStrings.of(context).paymentNotApproved),
           backgroundColor: Colors.red,
         ),
       );
@@ -588,10 +570,10 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Completa el pago en Wompi (PSE, Nequi, tarjeta) y regresa aqui para verificarlo'),
+          SnackBar(
+            content: Text(AppStrings.of(context).completeWompiReturn),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 5),
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -622,13 +604,22 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Abre Mercado Pago para completar el pago'),
+            SnackBar(
+              content: Text(AppStrings.of(context).openMercadoPago),
               backgroundColor: Colors.blue,
             ),
           );
         }
       }
+    }
+  }
+
+  String _formatDate(String isoDate) {
+    try {
+      final dt = DateTime.parse(isoDate).toLocal();
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+    } catch (_) {
+      return isoDate;
     }
   }
 }

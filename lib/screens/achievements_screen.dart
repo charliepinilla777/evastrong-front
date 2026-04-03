@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/eva_colors.dart';
 import '../services/gamification_service.dart';
+import '../services/history_service.dart';
+import '../l10n/app_strings.dart';
+import '../providers/language_provider.dart';
 
 class AchievementsScreen extends StatefulWidget {
   const AchievementsScreen({super.key});
@@ -13,11 +17,49 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   final GamificationService _gamificationService = GamificationService();
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _loadAndEvaluate();
+  }
+
+  Future<void> _loadAndEvaluate() async {
+    // Cargar estado persistido primero (logros anteriores)
+    await _gamificationService.loadUnlockedState();
+
+    // Luego evaluar con historial real
+    try {
+      final history = await HistoryService.getHistory();
+      final newlyUnlocked = await _gamificationService.evaluateFromHistory(
+        history.records,
+        history.stats,
+      );
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      // Mostrar notificación si se desbloquearon nuevos logros
+      if (newlyUnlocked.isNotEmpty) {
+        _showNewAchievementsSnackBar(newlyUnlocked);
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showNewAchievementsSnackBar(List<Achievement> achievements) {
+    final s = AppStrings.of(context);
+    final isEn = context.read<LanguageProvider>().isEnglish;
+    final names = achievements.map((a) => '${a.icon} ${a.localizedTitle(isEn)}').join(', ');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${s.newAchievement} $names'),
+        backgroundColor: EvaColors.vibrantPink,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
@@ -28,6 +70,23 @@ class _AchievementsScreenState extends State<AchievementsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+    final isEn = context.watch<LanguageProvider>().isEnglish;
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: EvaColors.backgroundLight,
+        appBar: AppBar(
+          title: Text(s.achievementsTitle),
+          backgroundColor: EvaColors.vibrantPink,
+          foregroundColor: EvaColors.textOnVibrant,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(color: EvaColors.vibrantPink),
+        ),
+      );
+    }
+
     final allAchievements = _gamificationService.getAllAchievements();
     final unlockedAchievements = _gamificationService.getUnlockedAchievements();
     final totalPoints = _gamificationService.getTotalPoints();
@@ -36,7 +95,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     return Scaffold(
       backgroundColor: EvaColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Logros'),
+        title: Text(s.achievementsTitle),
         backgroundColor: EvaColors.vibrantPink,
         foregroundColor: EvaColors.textOnVibrant,
         elevation: 8,
@@ -45,16 +104,15 @@ class _AchievementsScreenState extends State<AchievementsScreen>
           indicatorColor: EvaColors.textOnVibrant,
           labelColor: EvaColors.textOnVibrant,
           unselectedLabelColor: EvaColors.textOnVibrant.withOpacity(0.7),
-          tabs: const [
-            Tab(text: 'Todos', icon: Icon(Icons.emoji_events)),
-            Tab(text: 'Desbloqueados', icon: Icon(Icons.star)),
-            Tab(text: 'Progreso', icon: Icon(Icons.trending_up)),
+          tabs: [
+            Tab(text: s.allAchievements, icon: const Icon(Icons.emoji_events)),
+            Tab(text: s.unlocked, icon: const Icon(Icons.star)),
+            Tab(text: s.progress, icon: const Icon(Icons.trending_up)),
           ],
         ),
       ),
       body: Column(
         children: [
-          // Header con estadísticas
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -64,18 +122,14 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
+                    _buildStatCard(s.points, totalPoints.toString(), Icons.stars),
                     _buildStatCard(
-                      'Puntos',
-                      totalPoints.toString(),
-                      Icons.stars,
-                    ),
-                    _buildStatCard(
-                      'Logros',
+                      s.achievementsTitle,
                       '${unlockedAchievements.length}/${allAchievements.length}',
                       Icons.emoji_events,
                     ),
                     _buildStatCard(
-                      'Progreso',
+                      s.progress,
                       '${(completionPercentage * 100).round()}%',
                       Icons.trending_up,
                     ),
@@ -109,9 +163,9 @@ class _AchievementsScreenState extends State<AchievementsScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildAllAchievementsTab(),
-                _buildUnlockedAchievementsTab(),
-                _buildProgressTab(),
+                _buildAllAchievementsTab(isEn: isEn),
+                _buildUnlockedAchievementsTab(s: s, isEn: isEn),
+                _buildProgressTab(s: s, isEn: isEn),
               ],
             ),
           ),
@@ -143,8 +197,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     );
   }
 
-  Widget _buildAllAchievementsTab() {
-    final categories = _gamificationService.getCategories();
+  Widget _buildAllAchievementsTab({required bool isEn}) {
+    final categories = _gamificationService.getLocalizedCategories(isEn: isEn);
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -152,7 +206,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
       itemBuilder: (context, index) {
         final category = categories[index];
         final categoryAchievements = _gamificationService
-            .getAchievementsByCategory(category);
+            .getAchievementsByLocalizedCategory(category, isEn: isEn);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +223,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               spacing: 12,
               runSpacing: 12,
               children: categoryAchievements
-                  .map((achievement) => _buildAchievementCard(achievement))
+                  .map((a) => _buildAchievementCard(a, isEn: isEn))
                   .toList(),
             ),
             const SizedBox(height: 24),
@@ -179,13 +233,13 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     );
   }
 
-  Widget _buildUnlockedAchievementsTab() {
+  Widget _buildUnlockedAchievementsTab({required AppStrings s, required bool isEn}) {
     final unlockedAchievements = _gamificationService.getUnlockedAchievements();
 
     if (unlockedAchievements.isEmpty) {
       return _buildEmptyState(
-        '¡Aún no tienes logros desbloqueados!',
-        'Completa rutinas y alcanza tus metas para empezar a ganar logros.',
+        s.noAchievementsYet,
+        s.noAchievementsSub,
         Icons.emoji_events_outlined,
       );
     }
@@ -194,14 +248,13 @@ class _AchievementsScreenState extends State<AchievementsScreen>
       padding: const EdgeInsets.all(16),
       itemCount: unlockedAchievements.length,
       itemBuilder: (context, index) {
-        final achievement = unlockedAchievements[index];
-        return _buildAchievementCard(achievement);
+        return _buildAchievementCard(unlockedAchievements[index], isEn: isEn);
       },
     );
   }
 
-  Widget _buildProgressTab() {
-    final categoryPoints = _gamificationService.getPointsByCategory();
+  Widget _buildProgressTab({required AppStrings s, required bool isEn}) {
+    final categoryPoints = _gamificationService.getLocalizedPointsByCategory(isEn: isEn);
     final categories = categoryPoints.keys.toList();
 
     return ListView.builder(
@@ -211,7 +264,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         final category = categories[index];
         final points = categoryPoints[category] ?? 0;
         final categoryAchievements = _gamificationService
-            .getAchievementsByCategory(category);
+            .getAchievementsByLocalizedCategory(category, isEn: isEn);
         final unlockedInCategory = categoryAchievements
             .where((a) => a.isUnlocked)
             .length;
@@ -278,7 +331,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     );
   }
 
-  Widget _buildAchievementCard(Achievement achievement) {
+  Widget _buildAchievementCard(Achievement achievement, {bool isEn = false}) {
     final isUnlocked = achievement.isUnlocked;
 
     return Container(
@@ -303,7 +356,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => _showAchievementDetails(achievement),
+          onTap: () => _showAchievementDetails(achievement, isEn: isEn),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -313,7 +366,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                 Text(achievement.icon, style: const TextStyle(fontSize: 36)),
                 const SizedBox(height: 4),
                 Text(
-                  achievement.title,
+                  achievement.localizedTitle(isEn),
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: isUnlocked
@@ -373,7 +426,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     );
   }
 
-  void _showAchievementDetails(Achievement achievement) {
+  void _showAchievementDetails(Achievement achievement, {bool isEn = false}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -403,7 +456,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               ),
               const SizedBox(height: 16),
               Text(
-                achievement.title,
+                achievement.localizedTitle(isEn),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: EvaColors.textPrimary,
                   fontWeight: FontWeight.bold,
@@ -412,7 +465,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                achievement.description,
+                achievement.localizedDescription(isEn),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: EvaColors.textPrimary.withOpacity(0.8),
                 ),
@@ -433,7 +486,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                             ),
                       ),
                       Text(
-                        'Puntos',
+                        AppStrings.of(context).points,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: EvaColors.textPrimary.withOpacity(0.6),
                         ),
@@ -443,7 +496,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                   Column(
                     children: [
                       Text(
-                        achievement.category,
+                        achievement.localizedCategory(isEn),
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               color: EvaColors.textPrimary,
@@ -451,7 +504,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                             ),
                       ),
                       Text(
-                        'Categoría',
+                        AppStrings.of(context).category,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: EvaColors.textPrimary.withOpacity(0.6),
                         ),
@@ -465,7 +518,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
                   children: [
                     const SizedBox(height: 16),
                     Text(
-                      'Desbloqueado el ${_formatDate(achievement.unlockedAt!)}',
+                      AppStrings.of(context).unlockedOn(_formatDate(achievement.unlockedAt!)),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: EvaColors.textPrimary.withOpacity(0.5),
                       ),
@@ -479,8 +532,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cerrar',
-              style: TextStyle(color: EvaColors.vibrantPink),
+              AppStrings.of(context).close,
+              style: const TextStyle(color: EvaColors.vibrantPink),
             ),
           ),
         ],

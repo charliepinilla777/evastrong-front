@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../services/routine_recommendation_service.dart';
 import '../services/user_profile_service.dart';
 import '../theme/eva_colors.dart';
@@ -33,7 +34,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     'sobrepeso',
     'obesidad',
   ];
-  final List<String> _fitnessLevels = ['beginner', 'intermediate', 'advanced'];
+  final List<String> _fitnessLevels = ['principiante', 'intermedio', 'avanzado'];
   final List<String> _pathologiesOptions = [
     'ninguna',
     'cardiaca',
@@ -67,13 +68,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             _ageRange = '55+';
           }
 
-          _fitnessLevel = userProfile.fitnessLevel;
+          _fitnessLevel = _normalizeFitnessLevel(userProfile.fitnessLevel);
           _kneeSensitive = userProfile.kneeSensitive;
           _constitution = 'normopeso'; // Valor por defecto
           _pathologies = 'ninguna'; // Valor por defecto
           _dailyTime = 15; // Valor por defecto
           _isLoading = false;
         });
+      } else {
+        setState(() => _isLoading = false);
       }
 
       // También intentar cargar del backend
@@ -84,20 +87,19 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         setState(() {
           _ageRange = profileData['ageRange'] ?? _ageRange;
           _constitution = profileData['constitution'] ?? _constitution;
-          _fitnessLevel = profileData['fitnessLevel'] ?? _fitnessLevel;
+          _fitnessLevel = _normalizeFitnessLevel(profileData['fitnessLevel']) ?? _fitnessLevel;
           _kneeSensitive = profileData['kneeSensitive'] ?? _kneeSensitive;
           _pathologies = profileData['pathologies'] ?? _pathologies;
           _dailyTime = profileData['dailyTime'] ?? _dailyTime;
         });
-      } catch (e) {
-        print('Error cargando perfil del backend: $e');
+      } catch (_) {
         // Continuar con los datos locales
       }
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error al cargar perfil: $e')));
+      ).showSnackBar(SnackBar(content: Text('${AppStrings.of(context).profileLoadError}: $e')));
     }
   }
 
@@ -135,8 +137,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
         if (response['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('¡Perfil actualizado exitosamente!'),
+            SnackBar(
+              content: Text(AppStrings.of(context).profileUpdatedOk),
               backgroundColor: Colors.green,
             ),
           );
@@ -145,8 +147,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       } catch (e) {
         // Si falla el backend, mostrar éxito localmente
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('¡Perfil guardado localmente!'),
+          SnackBar(
+            content: Text(AppStrings.of(context).profileSavedLocally),
             backgroundColor: Colors.orange,
           ),
         );
@@ -155,7 +157,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error al guardar perfil: $e')));
+      ).showSnackBar(SnackBar(content: Text('${AppStrings.of(context).profileSaveError}: $e')));
     } finally {
       setState(() => _isSaving = false);
     }
@@ -166,7 +168,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Scaffold(
       backgroundColor: Effects3DService.backgroundGradient3D.colors[0],
       appBar: Effects3DService.appBar3D(
-        title: 'Configurar Perfil de Fitness',
+        title: AppStrings.of(context).setupFitnessProfile,
         gradient: Effects3DService.primaryGradient3D,
       ),
       body: _isLoading
@@ -184,74 +186,79 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildHeaderCard3D(),
+                    _buildHeaderCard3D(context),
                     const SizedBox(height: 24),
-                    _buildSectionTitle3D('Información Básica'),
+                    _buildSectionTitle3D(AppStrings.of(context).basicInfo),
                     const SizedBox(height: 16),
 
                     _buildDropdownField3D(
-                      'Rango de Edad',
+                      context,
+                      AppStrings.of(context).ageRange,
                       _ageRange,
                       _ageRanges,
                       (value) => setState(() => _ageRange = value),
-                      'Selecciona tu rango de edad',
+                      AppStrings.of(context).ageRangeHint,
                     ),
 
                     const SizedBox(height: 16),
 
                     _buildDropdownField3D(
-                      'Constitución Física',
+                      context,
+                      AppStrings.of(context).physicalConstitution,
                       _constitution,
                       _constitutions,
                       (value) => setState(() => _constitution = value),
-                      'Selecciona tu tipo de constitución',
+                      AppStrings.of(context).constitutionHint,
                     ),
 
                     const SizedBox(height: 16),
 
                     _buildDropdownField3D(
-                      'Nivel de Fitness',
+                      context,
+                      AppStrings.of(context).fitnessLevel,
                       _fitnessLevel,
                       _fitnessLevels,
                       (value) => setState(() => _fitnessLevel = value),
-                      'Selecciona tu nivel actual',
+                      AppStrings.of(context).fitnessLevelHint,
                     ),
 
                     const SizedBox(height: 24),
 
-                    _buildSectionTitle3D('Preferencias y Limitaciones'),
+                    _buildSectionTitle3D(AppStrings.of(context).prefsAndLimitations),
                     const SizedBox(height: 16),
 
                     _buildSwitchField3D(
-                      'Rodillas Sensibles',
+                      AppStrings.of(context).kneeSensitive,
                       _kneeSensitive,
                       (value) => setState(() => _kneeSensitive = value),
-                      'Marcar si tienes problemas en las rodillas',
+                      AppStrings.of(context).kneeSensitiveDesc,
                     ),
 
                     const SizedBox(height: 16),
 
                     _buildDropdownField3D(
-                      'Patologías',
+                      context,
+                      AppStrings.of(context).pathologies,
                       _pathologies,
                       _pathologiesOptions,
                       (value) => setState(() => _pathologies = value),
-                      'Selecciona si tienes alguna condición médica',
+                      AppStrings.of(context).pathologiesHint,
                     ),
 
                     const SizedBox(height: 16),
 
                     _buildDropdownField3D(
-                      'Tiempo Diario Disponible',
+                      context,
+                      AppStrings.of(context).dailyTime,
                       _dailyTime.toString(),
                       _dailyTimeOptions.map((e) => e.toString()).toList(),
                       (value) => setState(() => _dailyTime = int.parse(value!)),
-                      'Minutos que puedes dedicar al ejercicio',
+                      AppStrings.of(context).dailyTimeHint,
                     ),
 
                     const SizedBox(height: 32),
 
-                    _buildSaveButton3D(),
+                    _buildSaveButton3D(context),
                   ],
                 ),
               ),
@@ -259,21 +266,21 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildHeaderCard3D() {
+  Widget _buildHeaderCard3D(BuildContext context) {
+    final s = AppStrings.of(context);
     return Effects3DService.card3D(
       gradient: Effects3DService.primaryGradient3D,
       shadows: Effects3DService.elevatedShadow3D,
       child: Column(
         children: [
           Effects3DService.text3D(
-            text: '💪 Crea Tu Perfil Perfecto',
+            text: s.createPerfectProfile,
             style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
             shadows: Effects3DService.bigTextShadow3D,
           ),
           const SizedBox(height: 16),
           Effects3DService.text3D(
-            text:
-                'Personaliza tu experiencia de fitness con rutinas adaptadas a tus necesidades y objetivos específicos.',
+            text: s.profileSetupSubtitle,
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             shadows: Effects3DService.textShadow3D,
@@ -297,6 +304,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   }
 
   Widget _buildDropdownField3D(
+    BuildContext context,
     String label,
     String? value,
     List<String> items,
@@ -354,13 +362,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           return DropdownMenuItem<String>(
             value: item,
             child: Effects3DService.text3D(
-              text: _formatDisplayText(item),
+              text: AppStrings.of(context).profileFormatValue(item),
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           );
         }).toList(),
         onChanged: onChanged,
-        validator: (value) => value == null ? 'Campo requerido' : null,
+        validator: (value) => value == null ? AppStrings.of(context).fieldRequired : null,
       ),
     );
   }
@@ -437,7 +445,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildSaveButton3D() {
+  Widget _buildSaveButton3D(BuildContext context) {
     return Effects3DService.button3D(
       onPressed: _isSaving ? () {} : _saveProfile,
       gradient: Effects3DService.primaryGradient3D,
@@ -453,7 +461,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               ),
             )
           : Effects3DService.text3D(
-              text: 'Guardar Perfil',
+              text: AppStrings.of(context).saveProfile,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               shadows: Effects3DService.bigTextShadow3D,
             ),
@@ -647,7 +655,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           );
         }).toList(),
         onChanged: onChanged,
-        validator: (value) => value == null ? 'Campo requerido' : null,
+        validator: (value) => value == null ? AppStrings.of(context).fieldRequired : null,
       ),
     );
   }
@@ -788,6 +796,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
+  String? _normalizeFitnessLevel(dynamic value) {
+    if (value == null) return null;
+    switch (value.toString()) {
+      case 'beginner': return 'principiante';
+      case 'intermediate': return 'intermedio';
+      case 'advanced': return 'avanzado';
+      default: return value.toString();
+    }
+  }
+
   String _formatDisplayText(String value) {
     switch (value) {
       case '18-35':
@@ -805,10 +823,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       case 'obesidad':
         return 'Obesidad';
       case 'beginner':
+      case 'principiante':
         return 'Principiante';
       case 'intermediate':
+      case 'intermedio':
         return 'Intermedio';
       case 'advanced':
+      case 'avanzado':
         return 'Avanzado';
       case 'ninguna':
         return 'Ninguna';
