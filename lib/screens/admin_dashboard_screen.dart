@@ -903,7 +903,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
       final response = await http
           .get(Uri.parse('${AppConfig.backendUrl}/health'))
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       if (mounted) {
         if (response.statusCode == 200) {

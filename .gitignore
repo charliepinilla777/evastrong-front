@@ -1,3 +1,9 @@
+# Secrets & local config — NEVER commit
+.env
+.env.*
+.claude/
+*.md.bak
+
 # Miscellaneous
 *.class
 *.log

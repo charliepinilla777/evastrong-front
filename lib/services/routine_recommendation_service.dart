@@ -50,10 +50,12 @@ class Exercise {
   final String type;
   final String zone;
   final int? timeSeconds;
+  final int sets;
   final String? repetitions;
   final int restSeconds;
   final bool kneeFriendly;
   final int order;
+  final String? videoUrl;
 
   Exercise({
     required this.exerciseId,
@@ -62,10 +64,12 @@ class Exercise {
     required this.type,
     required this.zone,
     this.timeSeconds,
+    this.sets = 1,
     this.repetitions,
     required this.restSeconds,
     required this.kneeFriendly,
     required this.order,
+    this.videoUrl,
   });
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
@@ -76,10 +80,12 @@ class Exercise {
       type: json['type'] ?? '',
       zone: json['zone'] ?? '',
       timeSeconds: json['timeSeconds'],
+      sets: (json['sets'] as num?)?.toInt() ?? 1,
       repetitions: json['repetitions'],
       restSeconds: json['restSeconds'] ?? 20,
       kneeFriendly: json['kneeFriendly'] ?? true,
       order: json['order'] ?? 0,
+      videoUrl: json['video']?['url'] as String?,
     );
   }
 
@@ -90,10 +96,12 @@ class Exercise {
     'type': type,
     'zone': zone,
     if (timeSeconds != null) 'timeSeconds': timeSeconds,
+    'sets': sets,
     if (repetitions != null) 'repetitions': repetitions,
     'restSeconds': restSeconds,
     'kneeFriendly': kneeFriendly,
     'order': order,
+    if (videoUrl != null) 'video': {'url': videoUrl},
   };
 }
 
@@ -214,7 +222,7 @@ class RoutineRecommendationService {
   static String get _baseUrl => AppConfig.backendUrl;
 
   /// Obtener rutina personalizada según perfil del usuario
-  static Future<Map<String, dynamic>> getPersonalizedRoutine() async {
+  static Future<Map<String, dynamic>> getPersonalizedRoutine({String lang = 'es'}) async {
     try {
       final token = await SecureStorageService.getToken();
       final headers = {
@@ -222,9 +230,11 @@ class RoutineRecommendationService {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
+      final url = Uri.parse('$_baseUrl/routine-recommendations/personalized')
+          .replace(queryParameters: {'lang': lang});
       final response = await http
-          .get(Uri.parse('$_baseUrl/routine-recommendations/personalized'), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .get(url, headers: headers)
+          .timeout(AppConfig.apiTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -246,15 +256,19 @@ class RoutineRecommendationService {
     bool? kneeSensitive,
     String? category,
     String? intensity,
+    String lang = 'es',
   }) async {
     try {
-      String url = '$_baseUrl/routine-recommendations/templates?page=$page&limit=$limit';
-
-      if (ageRange != null) url += '&ageRange=$ageRange';
-      if (level != null) url += '&level=$level';
-      if (kneeSensitive != null) url += '&kneeSensitive=$kneeSensitive';
-      if (category != null) url += '&category=$category';
-      if (intensity != null) url += '&intensity=$intensity';
+      final params = <String, String>{
+        'page': '$page', 'limit': '$limit', 'lang': lang,
+        if (ageRange != null) 'ageRange': ageRange,
+        if (level != null) 'level': level,
+        if (kneeSensitive != null) 'kneeSensitive': '$kneeSensitive',
+        if (category != null) 'category': category,
+        if (intensity != null) 'intensity': intensity,
+      };
+      final String url = Uri.parse('$_baseUrl/routine-recommendations/templates')
+          .replace(queryParameters: params).toString();
 
       final token = await SecureStorageService.getToken();
       final headers = {
@@ -264,7 +278,7 @@ class RoutineRecommendationService {
 
       final response = await http
           .get(Uri.parse(url), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -288,7 +302,7 @@ class RoutineRecommendationService {
 
       final response = await http
           .get(Uri.parse('$_baseUrl/routine-recommendations/templates/$templateId'), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -330,7 +344,7 @@ class RoutineRecommendationService {
             headers: headers,
             body: body,
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -358,7 +372,7 @@ class RoutineRecommendationService {
 
       final response = await http
           .get(Uri.parse('$_baseUrl/routine-recommendations/profile'), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -406,7 +420,7 @@ class RoutineRecommendationService {
             headers: headers,
             body: body,
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

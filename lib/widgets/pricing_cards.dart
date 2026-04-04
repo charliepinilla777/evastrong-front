@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_strings.dart';
 import '../providers/payment_provider.dart';
 
 class PricingCard extends StatelessWidget {
@@ -292,14 +293,12 @@ class PricingCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancelar Suscripción'),
-        content: const Text(
-          '¿Estás seguro de que quieres cancelar tu suscripción? Perderás acceso a todas las características premium.',
-        ),
+        title: Text(AppStrings.of(context).cancelSubscriptionTitle),
+        content: Text(AppStrings.of(context).cancelSubscriptionConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('No, mantener suscripción'),
+            child: Text(AppStrings.of(context).keepSubscription),
           ),
           TextButton(
             onPressed: () {
@@ -307,17 +306,17 @@ class PricingCard extends StatelessWidget {
               paymentProvider.cancelSubscription().then((success) {
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Suscripción cancelada exitosamente'),
+                    SnackBar(
+                      content: Text(AppStrings.of(context).subscriptionCancelledOk),
                       backgroundColor: Colors.green,
                     ),
                   );
                 }
               });
             },
-            child: const Text(
-              'Sí, cancelar',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              AppStrings.of(context).yesCancelSubscription,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],

@@ -1,8 +1,8 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../theme/eva_colors.dart';
+import '../config/app_config.dart';
 
 class AdminDashboardData {
   // Estadísticas de usuarios
@@ -337,8 +337,8 @@ class AdminService {
 
   AdminService._();
 
-  // URL del backend - configurada para producción local
-  static const String _baseUrl = 'http://localhost:5000';
+  // URL del backend - usa AppConfig para dev/prod automáticamente
+  static String get _baseUrl => AppConfig.backendUrl;
 
   // Token de autenticación del administrador
   String? _authToken;
@@ -355,7 +355,7 @@ class AdminService {
   Future<bool> login(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/api/admin/login'),
+        Uri.parse('$_baseUrl/admin/login'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'email': email, 'password': password}),
       );
@@ -390,249 +390,109 @@ class AdminService {
   };
 
   Future<AdminDashboardData> getDashboardData() async {
-    try {
-      // Verificar si está autenticado
-      if (_authToken == null) {
-        throw Exception('No autenticado');
-      }
+    if (_authToken == null) throw Exception('No autenticado');
 
-      // Obtener datos del backend
-      final responses = await Future.wait([
-        _getUsersStats(),
-        _getRevenueStats(),
-        _getAchievementsStats(),
-        _getSubscriptionsStats(),
-        _getTrafficStats(),
-        _getFeedbackStats(),
-      ]);
+    // Obtener cada sección independientemente para no fallar todo si falla una
+    final usersData = await _getUsersStats();
+    final revenueData = await _getRevenueStats();
+    final achievementsData = await _getAchievementsStats();
+    final subscriptionsData = await _getSubscriptionsStats();
+    final trafficData = await _getTrafficStats();
+    final feedbackData = await _getFeedbackStats();
 
-      return AdminDashboardData(
-        totalUsers: responses[0]['totalUsers'],
-        activeUsers: responses[0]['activeUsers'],
-        newUsersToday: responses[0]['newUsersToday'],
-        topUsers: _parseTopUsers(responses[0]['topUsers']),
-        totalAchievements: responses[2]['totalAchievements'],
-        achievementsUnlockedToday: responses[2]['achievementsUnlockedToday'],
-        recentAchievements: _parseRecentAchievements(
-          responses[2]['recentAchievements'],
-        ),
-        dailyRevenue: responses[1]['dailyRevenue'].toDouble(),
-        monthlyRevenue: responses[1]['monthlyRevenue'].toDouble(),
-        dailySales: responses[1]['dailySales'],
-        recentSales: _parseRecentSales(responses[1]['recentSales']),
-        expiringSubscriptions: _parseExpiringSubscriptions(
-          responses[3]['expiringSubscriptions'],
-        ),
-        activeSubscriptions: responses[3]['activeSubscriptions'],
-        expiredThisMonth: responses[3]['expiredThisMonth'],
-        dailyActiveUsers: responses[4]['dailyActiveUsers'],
-        sessionCount: responses[4]['sessionCount'],
-        avgSessionDuration: responses[4]['avgSessionDuration'].toDouble(),
-        trafficTrend: _parseTrafficTrend(responses[4]['trafficTrend']),
-        recentFeedback: _parseRecentFeedback(responses[5]['recentFeedback']),
-        satisfactionScore: responses[5]['satisfactionScore'].toDouble(),
-        pendingResponses: responses[5]['pendingResponses'],
-      );
-    } catch (e) {
-      debugPrint('Error al obtener datos del dashboard: $e');
-      // En caso de error, retornar datos mock
-      debugPrint('Usando datos de demostración...');
-      return AdminDashboardData.mock();
-    }
+    return AdminDashboardData(
+      totalUsers: usersData['totalUsers'] ?? 0,
+      activeUsers: usersData['activeUsers'] ?? 0,
+      newUsersToday: usersData['newUsersToday'] ?? 0,
+      topUsers: _parseTopUsers((usersData['topUsers'] as List?) ?? []),
+      totalAchievements: achievementsData['totalAchievements'] ?? 0,
+      achievementsUnlockedToday: achievementsData['achievementsUnlockedToday'] ?? 0,
+      recentAchievements: _parseRecentAchievements(
+        (achievementsData['recentAchievements'] as List?) ?? []),
+      dailyRevenue: (revenueData['dailyRevenue'] ?? 0).toDouble(),
+      monthlyRevenue: (revenueData['monthlyRevenue'] ?? 0).toDouble(),
+      dailySales: revenueData['dailySales'] ?? 0,
+      recentSales: _parseRecentSales((revenueData['recentSales'] as List?) ?? []),
+      expiringSubscriptions: _parseExpiringSubscriptions(
+        (subscriptionsData['expiringSubscriptions'] as List?) ?? []),
+      activeSubscriptions: subscriptionsData['activeSubscriptions'] ?? 0,
+      expiredThisMonth: subscriptionsData['expiredThisMonth'] ?? 0,
+      dailyActiveUsers: trafficData['dailyActiveUsers'] ?? 0,
+      sessionCount: trafficData['sessionCount'] ?? 0,
+      avgSessionDuration: (trafficData['avgSessionDuration'] ?? 0).toDouble(),
+      trafficTrend: _parseTrafficTrend((trafficData['trafficTrend'] as List?) ?? []),
+      recentFeedback: _parseRecentFeedback((feedbackData['recentFeedback'] as List?) ?? []),
+      satisfactionScore: (feedbackData['satisfactionScore'] ?? 0).toDouble(),
+      pendingResponses: feedbackData['pendingResponses'] ?? 0,
+    );
   }
 
   // Métodos para obtener estadísticas del backend
   Future<Map<String, dynamic>> _getUsersStats() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/admin/users/stats'),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Error al obtener estadísticas de usuarios');
-      }
-    } catch (e) {
-      debugPrint('Error en _getUsersStats: $e');
-      // Retornar datos mock para este endpoint
-      return {
-        'totalUsers': 2847,
-        'activeUsers': 1923,
-        'newUsersToday': 47,
-        'topUsers': [
-          {
-            'name': 'María García',
-            'achievements': 45,
-            'performance': 98.5,
-            'avatar': '👩‍💼',
-          },
-          {
-            'name': 'Ana López',
-            'achievements': 38,
-            'performance': 95.2,
-            'avatar': '👩‍🎓',
-          },
-        ],
-      };
+    final response = await http
+        .get(Uri.parse('$_baseUrl/admin/users/stats'), headers: _headers)
+        .timeout(AppConfig.apiTimeout);
+    if (response.statusCode != 200) {
+      throw Exception('Error usuarios stats: ${response.statusCode}');
     }
+    return json.decode(response.body);
   }
 
   Future<Map<String, dynamic>> _getRevenueStats() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/admin/revenue/stats'),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Error al obtener estadísticas de revenue');
-      }
-    } catch (e) {
-      debugPrint('Error en _getRevenueStats: $e');
-      return {
-        'dailyRevenue': 2847.50,
-        'monthlyRevenue': 45678.90,
-        'dailySales': 89,
-        'recentSales': [
-          {
-            'userId': 'USR2847',
-            'plan': 'Premium Mensual',
-            'amount': 29.99,
-            'time': 'Hace 2 min',
-          },
-        ],
-      };
+    final response = await http
+        .get(Uri.parse('$_baseUrl/admin/revenue/stats'), headers: _headers)
+        .timeout(AppConfig.apiTimeout);
+    if (response.statusCode != 200) {
+      throw Exception('Error revenue stats: ${response.statusCode}');
     }
+    return json.decode(response.body);
   }
 
   Future<Map<String, dynamic>> _getAchievementsStats() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/admin/achievements/stats'),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Error al obtener estadísticas de logros');
-      }
-    } catch (e) {
-      print('Error en _getAchievementsStats: $e');
-      return {
-        'totalAchievements': 12543,
-        'achievementsUnlockedToday': 234,
-        'recentAchievements': [
-          {
-            'userName': 'María García',
-            'achievement': 'Rutina Perfecta',
-            'time': 'Hace 5 min',
-          },
-        ],
-      };
+    final response = await http
+        .get(Uri.parse('$_baseUrl/admin/achievements/stats'), headers: _headers)
+        .timeout(AppConfig.apiTimeout);
+    if (response.statusCode != 200) {
+      throw Exception('Error logros stats: ${response.statusCode}');
     }
+    return json.decode(response.body);
   }
 
   Future<Map<String, dynamic>> _getSubscriptionsStats() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/admin/subscriptions/stats'),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Error al obtener estadísticas de suscripciones');
-      }
-    } catch (e) {
-      print('Error en _getSubscriptionsStats: $e');
-      return {
-        'expiringSubscriptions': [
-          {
-            'userId': 'USR1234',
-            'userName': 'María García',
-            'plan': 'Premium Mensual',
-            'daysLeft': 3,
-          },
-        ],
-        'activeSubscriptions': 892,
-        'expiredThisMonth': 23,
-      };
+    final response = await http
+        .get(Uri.parse('$_baseUrl/admin/subscriptions/stats'), headers: _headers)
+        .timeout(AppConfig.apiTimeout);
+    if (response.statusCode != 200) {
+      throw Exception('Error suscripciones stats: ${response.statusCode}');
     }
+    return json.decode(response.body);
   }
 
   Future<Map<String, dynamic>> _getTrafficStats() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/admin/traffic/stats'),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Error al obtener estadísticas de tráfico');
-      }
-    } catch (e) {
-      print('Error en _getTrafficStats: $e');
-      final random = Random();
-      return {
-        'dailyActiveUsers': 1923,
-        'sessionCount': 3847,
-        'avgSessionDuration': 24.5,
-        'trafficTrend': List.generate(7, (index) {
-          final daysAgo = 6 - index;
-          return {
-            'date': DateTime.now()
-                .subtract(Duration(days: daysAgo))
-                .toIso8601String(),
-            'users': 1500 + random.nextInt(500),
-            'sessions': 2000 + random.nextInt(800),
-          };
-        }),
-      };
+    final response = await http
+        .get(Uri.parse('$_baseUrl/admin/traffic/stats'), headers: _headers)
+        .timeout(AppConfig.apiTimeout);
+    if (response.statusCode != 200) {
+      throw Exception('Error tráfico stats: ${response.statusCode}');
     }
+    return json.decode(response.body);
   }
 
   Future<Map<String, dynamic>> _getFeedbackStats() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/api/admin/feedback/stats'),
-        headers: _headers,
-      );
-
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        throw Exception('Error al obtener estadísticas de feedback');
-      }
-    } catch (e) {
-      print('Error en _getFeedbackStats: $e');
-      return {
-        'recentFeedback': [
-          {
-            'userName': 'María García',
-            'rating': 5,
-            'comment': '¡Excelente app! Me encanta',
-            'time': 'Hace 10 min',
-          },
-        ],
-        'satisfactionScore': 4.6,
-        'pendingResponses': 12,
-      };
+    final response = await http
+        .get(Uri.parse('$_baseUrl/admin/feedback/stats'), headers: _headers)
+        .timeout(AppConfig.apiTimeout);
+    if (response.statusCode != 200) {
+      throw Exception('Error feedback stats: ${response.statusCode}');
     }
+    return json.decode(response.body);
   }
 
   // Métodos para enviar recordatorios y respuestas
   Future<void> sendReminderEmail(String userId, String userName) async {
     try {
       final response = await http.post(
-        Uri.parse('$_baseUrl/api/admin/subscriptions/send-reminder'),
+        Uri.parse('$_baseUrl/admin/subscriptions/send-reminder'),
         headers: _headers,
         body: json.encode({'userId': userId, 'userName': userName}),
       );
@@ -652,7 +512,7 @@ class AdminService {
   Future<void> respondToFeedback(String userId, String response) async {
     try {
       final httpResponse = await http.post(
-        Uri.parse('$_baseUrl/api/admin/feedback/respond'),
+        Uri.parse('$_baseUrl/admin/feedback/respond'),
         headers: _headers,
         body: json.encode({'userId': userId, 'response': response}),
       );

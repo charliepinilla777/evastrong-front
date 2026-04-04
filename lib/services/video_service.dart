@@ -126,16 +126,10 @@ class VideoService {
 
       final response = await http
           .get(Uri.parse(url), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw ApiException(
-          message: 'Error al obtener videos',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
       rethrow;
     }
@@ -152,19 +146,11 @@ class VideoService {
 
       final response = await http
           .get(Uri.parse('$_baseUrl/videos/$videoId'), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return VideoModel.fromJson(data['data']);
-      } else if (response.statusCode == 404) {
-        throw Exception('Video no encontrado');
-      } else {
-        throw ApiException(
-          message: 'Error al obtener video',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
+      final data = jsonDecode(response.body);
+      return VideoModel.fromJson(data['data']);
     } catch (e) {
       rethrow;
     }
@@ -237,15 +223,9 @@ class VideoService {
 
       final response = await http.Response.fromStream(streamResponse);
 
-      if (response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        return VideoModel.fromJson(data['data']);
-      } else {
-        throw ApiException(
-          message: 'Error al subir video',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
+      final data = jsonDecode(response.body);
+      return VideoModel.fromJson(data['data']);
     } catch (e) {
       rethrow;
     }
@@ -281,16 +261,10 @@ class VideoService {
               if (comment != null) 'comment': comment,
             }),
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw ApiException(
-          message: 'Error al valorar video',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
       rethrow;
     }
@@ -301,18 +275,12 @@ class VideoService {
     try {
       final response = await http
           .get(Uri.parse('$_baseUrl/videos/uploader/$userId'))
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List videos = data['data'] ?? [];
-        return videos.map((v) => VideoModel.fromJson(v)).toList();
-      } else {
-        throw ApiException(
-          message: 'Error al obtener videos del usuario',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
+      final data = jsonDecode(response.body);
+      final List videos = data['data'] ?? [];
+      return videos.map((v) => VideoModel.fromJson(v)).toList();
     } catch (e) {
       rethrow;
     }
@@ -340,17 +308,11 @@ class VideoService {
             headers: headers,
             body: jsonEncode(updates),
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return VideoModel.fromJson(data['data']);
-      } else {
-        throw ApiException(
-          message: 'Error al actualizar video',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
+      final data = jsonDecode(response.body);
+      return VideoModel.fromJson(data['data']);
     } catch (e) {
       rethrow;
     }
@@ -374,14 +336,9 @@ class VideoService {
             Uri.parse('$_baseUrl/videos/$videoId/publish'),
             headers: headers,
           )
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode != 200) {
-        throw ApiException(
-          message: 'Error al publicar video',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
     } catch (e) {
       rethrow;
     }
@@ -399,14 +356,9 @@ class VideoService {
 
       final response = await http
           .delete(Uri.parse('$_baseUrl/videos/$videoId'), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode != 200) {
-        throw ApiException(
-          message: 'Error al eliminar video',
-          statusCode: response.statusCode,
-        );
-      }
+      ApiException.throwIfError(response.statusCode);
     } catch (e) {
       rethrow;
     }

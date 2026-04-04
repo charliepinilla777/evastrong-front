@@ -15,6 +15,49 @@ class ApiException implements Exception {
 
   @override
   String toString() => message;
+
+  /// Lanza ApiException según el statusCode HTTP.
+  /// Usar en todos los servicios para manejo uniforme de errores.
+  static void throwIfError(int statusCode, {String? body}) {
+    switch (statusCode) {
+      case 200:
+      case 201:
+        return; // OK
+      case 401:
+        throw UnauthorizedException();
+      case 403:
+        throw ApiException(
+          message: 'No tienes permisos para esta acción.',
+          statusCode: 403,
+          code: 'FORBIDDEN',
+        );
+      case 404:
+        throw ApiException(
+          message: 'Recurso no encontrado.',
+          statusCode: 404,
+          code: 'NOT_FOUND',
+        );
+      case 429:
+        throw ApiException(
+          message: 'Demasiadas solicitudes. Intenta más tarde.',
+          statusCode: 429,
+          code: 'RATE_LIMITED',
+        );
+      case 500:
+      case 502:
+      case 503:
+        throw ApiException(
+          message: 'Error del servidor. Intenta de nuevo en unos momentos.',
+          statusCode: statusCode,
+          code: 'SERVER_ERROR',
+        );
+      default:
+        throw ApiException(
+          message: 'Error inesperado (código $statusCode).',
+          statusCode: statusCode,
+        );
+    }
+  }
 }
 
 class UnauthorizedException extends ApiException {
@@ -567,7 +610,7 @@ class ApiServiceV2 {
             },
           )
           .timeout(
-            const Duration(seconds: 30),
+            AppConfig.apiTimeout,
             onTimeout: () {
               throw TimeoutException('Timeout al obtener suscripción');
             },
@@ -599,7 +642,7 @@ class ApiServiceV2 {
             },
           )
           .timeout(
-            const Duration(seconds: 30),
+            AppConfig.apiTimeout,
             onTimeout: () {
               throw TimeoutException('Timeout al obtener rol');
             },

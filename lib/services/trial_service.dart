@@ -66,7 +66,7 @@ class TrialService {
 
       final response = await http
           .get(Uri.parse('$_baseUrl/trial/status'), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       final data = json.decode(response.body);
 
@@ -98,7 +98,7 @@ class TrialService {
 
       final response = await http
           .post(Uri.parse('$_baseUrl/trial/expire'), headers: headers)
-          .timeout(const Duration(seconds: 30));
+          .timeout(AppConfig.apiTimeout);
 
       if (response.statusCode != 200) {
         final data = json.decode(response.body);

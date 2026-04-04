@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'secure_auth_service.dart';
+import '../config/app_config.dart';
 
 /// Guard para controlar acceso a features basado en suscripción
 class SubscriptionGuard {
@@ -17,7 +18,7 @@ class SubscriptionGuard {
       final headers = await SecureAuthService.getAuthHeaders();
 
       final response = await http.get(
-        Uri.parse('http://localhost:5000/api/subscription/check/$feature'),
+        Uri.parse('${AppConfig.backendUrl}/subscriptions/check/$feature'),
         headers: headers,
       );
 
@@ -419,7 +420,7 @@ class SubscriptionGuard {
     try {
       final headers = await SecureAuthService.getAuthHeaders();
       final response = await http.get(
-        Uri.parse('http://localhost:5000/api/subscription/status'),
+        Uri.parse('${AppConfig.backendUrl}/subscriptions/current'),
         headers: headers,
       );
 

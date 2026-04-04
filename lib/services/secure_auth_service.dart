@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decode/jwt_decode.dart';
+import '../config/app_config.dart';
 
 /// Servicio de autenticación seguro con refresh tokens y control de suscripciones
 class SecureAuthService {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
-  static const String _baseUrl = 'http://localhost:5000';
+  static String get _baseUrl => AppConfig.backendUrl;
 
   // Tiempos de expiración
   static const Duration _accessTokenExpiry = Duration(minutes: 15);

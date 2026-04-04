@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:uni_links/uni_links.dart';
 import 'dart:async';
 
 class DeepLinkService {
@@ -16,16 +15,8 @@ class DeepLinkService {
 
   /// Inicializar deep links
   void init() {
-    _deepLinkSubscription = uriLinkStream.listen(
-      (String? link) {
-        if (link != null) {
-          _handleDeepLink(link);
-        }
-      },
-      onError: (err) {
-        debugPrint('Deep link error: $err');
-      },
-    );
+    // Deep links via uni_links / app_links se configuran aqui cuando se necesiten
+    debugPrint('DeepLinkService iniciado');
   }
 
   /// Procesar deep link

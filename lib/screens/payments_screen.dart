@@ -187,6 +187,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     BuildContext context,
     PaymentProvider paymentProvider,
   ) {
+    final s = AppStrings.of(context);
     final currentPlan = paymentProvider.currentPlan;
 
     return Column(

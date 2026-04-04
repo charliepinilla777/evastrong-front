@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Paleta de colores completa Eva Strong - Rosa Vibrante, Cósmica y Energía Dinámica
 class EvaColors {
@@ -176,78 +177,82 @@ class EvaColors {
             onSurface: textPrimary,
             onError: textOnVibrant,
           ),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
+      textTheme: TextTheme(
+        // Títulos grandes — Cormorant Garamond (elegante, alta costura)
+        displayLarge: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w300,
           fontSize: 32,
           letterSpacing: 1.2,
         ),
-        displayMedium: TextStyle(
+        displayMedium: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w400,
           fontSize: 28,
           letterSpacing: 1.0,
         ),
-        displaySmall: TextStyle(
+        displaySmall: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w500,
           fontSize: 24,
           letterSpacing: 0.8,
         ),
-        headlineLarge: TextStyle(
+        headlineLarge: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w600,
           fontSize: 22,
           letterSpacing: 0.5,
         ),
-        headlineMedium: TextStyle(
+        headlineMedium: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w600,
           fontSize: 20,
           letterSpacing: 0.3,
         ),
-        headlineSmall: TextStyle(
+        headlineSmall: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w700,
           fontSize: 18,
           letterSpacing: 0.2,
         ),
-        titleLarge: TextStyle(
+        // Títulos de sección — Raleway (moderno, elegante, femenino)
+        titleLarge: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 16,
           letterSpacing: 0.1,
         ),
-        titleMedium: TextStyle(
+        titleMedium: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 14,
           letterSpacing: 0.0,
         ),
-        titleSmall: TextStyle(
+        titleSmall: GoogleFonts.raleway(
           fontWeight: FontWeight.w600,
           fontSize: 12,
           letterSpacing: 0.0,
         ),
-        bodyLarge: TextStyle(
+        // Cuerpo de texto — Raleway (legible y refinado)
+        bodyLarge: GoogleFonts.raleway(
           fontWeight: FontWeight.w400,
           fontSize: 16,
           letterSpacing: 0.0,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: GoogleFonts.raleway(
           fontWeight: FontWeight.w400,
           fontSize: 14,
           letterSpacing: 0.0,
         ),
-        bodySmall: TextStyle(
+        bodySmall: GoogleFonts.raleway(
           fontWeight: FontWeight.w400,
           fontSize: 12,
           letterSpacing: 0.0,
         ),
-        labelLarge: TextStyle(
+        // Labels / botones — Raleway
+        labelLarge: GoogleFonts.raleway(
           fontWeight: FontWeight.w600,
           fontSize: 14,
           letterSpacing: 0.5,
         ),
-        labelMedium: TextStyle(
+        labelMedium: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 12,
           letterSpacing: 0.3,
         ),
-        labelSmall: TextStyle(
+        labelSmall: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 10,
           letterSpacing: 0.2,
@@ -258,11 +263,11 @@ class EvaColors {
         foregroundColor: textOnVibrant,
         elevation: 8,
         shadowColor: cosmicRed.withOpacity(0.3),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: GoogleFonts.cormorantGaramond(
           color: textOnVibrant,
-          fontSize: 22,
+          fontSize: 24,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.8,
+          letterSpacing: 1.2,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -353,92 +358,92 @@ class EvaColors {
             onSurface: textOnDark,
             onError: textOnVibrant,
           ),
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
+      textTheme: TextTheme(
+        displayLarge: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w300,
           fontSize: 32,
           letterSpacing: 1.2,
           color: textOnDark,
         ),
-        displayMedium: TextStyle(
+        displayMedium: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w400,
           fontSize: 28,
           letterSpacing: 1.0,
           color: textOnDark,
         ),
-        displaySmall: TextStyle(
+        displaySmall: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w500,
           fontSize: 24,
           letterSpacing: 0.8,
           color: textOnDark,
         ),
-        headlineLarge: TextStyle(
+        headlineLarge: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w600,
           fontSize: 22,
           letterSpacing: 0.5,
           color: textOnDark,
         ),
-        headlineMedium: TextStyle(
+        headlineMedium: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w600,
           fontSize: 20,
           letterSpacing: 0.3,
           color: textOnDark,
         ),
-        headlineSmall: TextStyle(
+        headlineSmall: GoogleFonts.cormorantGaramond(
           fontWeight: FontWeight.w700,
           fontSize: 18,
           letterSpacing: 0.2,
           color: textOnDark,
         ),
-        titleLarge: TextStyle(
+        titleLarge: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 16,
           letterSpacing: 0.1,
           color: textOnDark,
         ),
-        titleMedium: TextStyle(
+        titleMedium: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 14,
           letterSpacing: 0.0,
           color: textOnDark,
         ),
-        titleSmall: TextStyle(
+        titleSmall: GoogleFonts.raleway(
           fontWeight: FontWeight.w600,
           fontSize: 12,
           letterSpacing: 0.0,
           color: textOnDark,
         ),
-        bodyLarge: TextStyle(
+        bodyLarge: GoogleFonts.raleway(
           fontWeight: FontWeight.w400,
           fontSize: 16,
           letterSpacing: 0.0,
           color: textOnDark,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: GoogleFonts.raleway(
           fontWeight: FontWeight.w400,
           fontSize: 14,
           letterSpacing: 0.0,
           color: textOnDark,
         ),
-        bodySmall: TextStyle(
+        bodySmall: GoogleFonts.raleway(
           fontWeight: FontWeight.w400,
           fontSize: 12,
           letterSpacing: 0.0,
           color: textOnDark,
         ),
-        labelLarge: TextStyle(
+        labelLarge: GoogleFonts.raleway(
           fontWeight: FontWeight.w600,
           fontSize: 14,
           letterSpacing: 0.5,
           color: textOnDark,
         ),
-        labelMedium: TextStyle(
+        labelMedium: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 12,
           letterSpacing: 0.3,
           color: textOnDark,
         ),
-        labelSmall: TextStyle(
+        labelSmall: GoogleFonts.raleway(
           fontWeight: FontWeight.w500,
           fontSize: 10,
           letterSpacing: 0.2,
@@ -449,11 +454,11 @@ class EvaColors {
         backgroundColor: cosmicRed,
         foregroundColor: textOnVibrant,
         elevation: 8,
-        titleTextStyle: const TextStyle(
+        titleTextStyle: GoogleFonts.cormorantGaramond(
           color: textOnVibrant,
-          fontSize: 22,
+          fontSize: 24,
           fontWeight: FontWeight.w600,
-          letterSpacing: 0.8,
+          letterSpacing: 1.2,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

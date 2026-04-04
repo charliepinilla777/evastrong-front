@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../theme/eva_colors.dart';
 import '../services/wearable_service.dart';
 
@@ -566,12 +567,12 @@ class _WearablesScreenState extends State<WearablesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Editar Metas'),
-        content: const Text('Función de edición de metas próximamente...'),
+        title: Text(AppStrings.of(context).editGoalsTitle),
+        content: Text(AppStrings.of(context).editGoalsComingSoon),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+            child: Text(AppStrings.of(context).close),
           ),
         ],
       ),

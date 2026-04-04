@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../theme/eva_colors.dart';
 
 class VideoTutorialsScreen extends StatefulWidget {
@@ -9,15 +10,18 @@ class VideoTutorialsScreen extends StatefulWidget {
 }
 
 class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
-  final List<VideoTutorial> _tutorials = [
+  // ── Tutorial data: stable keys for category/difficulty; bilingual title/description ──
+  static const List<VideoTutorial> _tutorials = [
     VideoTutorial(
       id: '1',
       title: 'Principios Básicos del Entrenamiento',
+      titleEn: 'Basic Training Principles',
       description: 'Aprende los fundamentos para empezar tu transformación',
+      descriptionEn: 'Learn the fundamentals to start your transformation',
       duration: '15:30',
       thumbnail: '🏋️‍♀️',
-      category: 'Principiantes',
-      difficulty: 'Fácil',
+      categoryKey: 'beginners',
+      difficultyKey: 'easy',
       views: 15420,
       rating: 4.8,
       instructor: 'Carlos Fitness',
@@ -26,11 +30,13 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     VideoTutorial(
       id: '2',
       title: 'Técnica Perfecta de Sentadillas',
+      titleEn: 'Perfect Squat Technique',
       description: 'Domina la sentadilla con forma correcta y segura',
+      descriptionEn: 'Master the squat with correct and safe form',
       duration: '12:45',
       thumbnail: '🦵',
-      category: 'Técnica',
-      difficulty: 'Media',
+      categoryKey: 'technique',
+      difficultyKey: 'medium',
       views: 8934,
       rating: 4.9,
       instructor: 'Ana Pro',
@@ -39,11 +45,13 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     VideoTutorial(
       id: '3',
       title: 'Rutina de Abdominales en Casa',
+      titleEn: 'Home Abs Routine',
       description: 'Ejercicios efectivos sin equipment',
+      descriptionEn: 'Effective exercises without equipment',
       duration: '20:15',
       thumbnail: '💪',
-      category: 'Rutinas',
-      difficulty: 'Media',
+      categoryKey: 'routines',
+      difficultyKey: 'medium',
       views: 23156,
       rating: 4.7,
       instructor: 'María Trainer',
@@ -51,12 +59,14 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     ),
     VideoTutorial(
       id: '4',
-      title: 'Nutrition para Ganar Masa Muscular',
+      title: 'Nutrición para Ganar Masa Muscular',
+      titleEn: 'Nutrition for Muscle Building',
       description: 'Guía completa de alimentación para hipertrofia',
+      descriptionEn: 'Complete nutrition guide for hypertrophy',
       duration: '25:00',
       thumbnail: '🥗',
-      category: 'Nutrición',
-      difficulty: 'Avanzado',
+      categoryKey: 'nutrition',
+      difficultyKey: 'advanced',
       views: 18743,
       rating: 4.9,
       instructor: 'Dr. Luis Nutriólogo',
@@ -65,11 +75,13 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     VideoTutorial(
       id: '5',
       title: 'Estiramientos Post-Entrenamiento',
+      titleEn: 'Post-Workout Stretching',
       description: 'Recuperación y flexibilidad óptima',
+      descriptionEn: 'Optimal recovery and flexibility',
       duration: '18:20',
       thumbnail: '🧘‍♀️',
-      category: 'Recuperación',
-      difficulty: 'Fácil',
+      categoryKey: 'recovery',
+      difficultyKey: 'easy',
       views: 12456,
       rating: 4.6,
       instructor: 'Sofía Yoga',
@@ -78,11 +90,13 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     VideoTutorial(
       id: '6',
       title: 'Cardio HIIT para Quemar Grasa',
+      titleEn: 'HIIT Cardio to Burn Fat',
       description: 'Entrenamiento de alta intensidad',
+      descriptionEn: 'High-intensity training',
       duration: '30:00',
       thumbnail: '🔥',
-      category: 'Cardio',
-      difficulty: 'Alta',
+      categoryKey: 'cardio',
+      difficultyKey: 'high',
       views: 31289,
       rating: 4.8,
       instructor: 'Carlos Fitness',
@@ -90,72 +104,66 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     ),
   ];
 
-  String _selectedCategory = 'Todos';
-  final List<String> _categories = [
-    'Todos',
-    'Principiantes',
-    'Técnica',
-    'Rutinas',
-    'Nutrición',
-    'Recuperación',
-    'Cardio',
+  static const List<String> _categoryKeys = [
+    'all',
+    'beginners',
+    'technique',
+    'routines',
+    'nutrition',
+    'recovery',
+    'cardio',
   ];
+
+  String _selectedCategoryKey = 'all';
 
   @override
   Widget build(BuildContext context) {
-    final filteredTutorials = _selectedCategory == 'Todos'
+    final s = AppStrings.of(context);
+    final isEn = Localizations.localeOf(context).languageCode == 'en';
+
+    final filtered = _selectedCategoryKey == 'all'
         ? _tutorials
-        : _tutorials.where((t) => t.category == _selectedCategory).toList();
+        : _tutorials.where((t) => t.categoryKey == _selectedCategoryKey).toList();
 
     return Scaffold(
       backgroundColor: EvaColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Video Tutoriales'),
+        title: Text(s.videoTutorialsTitle),
         backgroundColor: EvaColors.vibrantPink,
         foregroundColor: EvaColors.textOnVibrant,
         elevation: 8,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: _showSearchDialog,
+            onPressed: () => _showSearchDialog(s),
           ),
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
+            onPressed: () => _showFilterDialog(s),
           ),
         ],
       ),
       body: Column(
         children: [
-          // Categorías
-          Container(
+          // ── Category chips ────────────────────────────────────────────────
+          SizedBox(
             height: 60,
-            padding: const EdgeInsets.symmetric(vertical: 8),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _categories.length,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              itemCount: _categoryKeys.length,
               itemBuilder: (context, index) {
-                final category = _categories[index];
-                final isSelected = category == _selectedCategory;
-
+                final key = _categoryKeys[index];
+                final isSelected = key == _selectedCategoryKey;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
-                    label: Text(category),
+                    label: Text(s.videoTutorialCategory(key)),
                     selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
-                    },
-                    backgroundColor: isSelected
-                        ? EvaColors.vibrantPink
-                        : EvaColors.surfaceLight,
+                    onSelected: (_) => setState(() => _selectedCategoryKey = key),
+                    backgroundColor: isSelected ? EvaColors.vibrantPink : EvaColors.surfaceLight,
                     labelStyle: TextStyle(
-                      color: isSelected
-                          ? EvaColors.textOnVibrant
-                          : EvaColors.textPrimary,
+                      color: isSelected ? EvaColors.textOnVibrant : EvaColors.textPrimary,
                     ),
                   ),
                 );
@@ -163,15 +171,13 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
             ),
           ),
 
-          // Lista de videos
+          // ── Tutorial list ─────────────────────────────────────────────────
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: filteredTutorials.length,
-              itemBuilder: (context, index) {
-                final tutorial = filteredTutorials[index];
-                return _buildVideoCard(tutorial);
-              },
+              itemCount: filtered.length,
+              itemBuilder: (context, index) =>
+                  _buildVideoCard(filtered[index], s, isEn),
             ),
           ),
         ],
@@ -179,55 +185,48 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     );
   }
 
-  Widget _buildVideoCard(VideoTutorial tutorial) {
+  Widget _buildVideoCard(VideoTutorial tutorial, AppStrings s, bool isEn) {
+    final displayTitle = isEn ? tutorial.titleEn : tutorial.title;
+    final displayDesc  = isEn ? tutorial.descriptionEn : tutorial.description;
+    final displayDiff  = s.videoDifficulty(tutorial.difficultyKey);
+    final displayCat   = s.videoTutorialCategory(tutorial.categoryKey);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _playVideo(tutorial),
+        onTap: () => _playVideo(tutorial, s, isEn),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thumbnail
+            // Thumbnail + badges
             Stack(
               children: [
                 Container(
                   width: double.infinity,
                   height: 200,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: EvaColors.primaryGradient,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   child: Center(
-                    child: Text(
-                      tutorial.thumbnail,
-                      style: const TextStyle(fontSize: 60),
-                    ),
+                    child: Text(tutorial.thumbnail, style: const TextStyle(fontSize: 60)),
                   ),
                 ),
                 Positioned(
                   top: 8,
                   right: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.8),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       tutorial.duration,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -236,21 +235,14 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         gradient: EvaColors.primaryGradient,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
                         'PRO',
-                        style: TextStyle(
-                          color: EvaColors.textOnVibrant,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: EvaColors.textOnVibrant, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -258,21 +250,14 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
                   bottom: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getDifficultyColor(tutorial.difficulty),
+                      color: _getDifficultyColor(tutorial.difficultyKey),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      tutorial.difficulty,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      displayDiff,
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -286,21 +271,21 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
                     ),
                     child: IconButton(
                       icon: const Icon(Icons.play_arrow, color: Colors.white),
-                      onPressed: () => _playVideo(tutorial),
+                      onPressed: () => _playVideo(tutorial, s, isEn),
                     ),
                   ),
                 ),
               ],
             ),
 
-            // Información
+            // Info
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    tutorial.title,
+                    displayTitle,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: EvaColors.textPrimary,
                       fontWeight: FontWeight.bold,
@@ -310,7 +295,7 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    tutorial.description,
+                    displayDesc,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: EvaColors.textPrimary.withOpacity(0.8),
                     ),
@@ -320,13 +305,10 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      CircleAvatar(
+                      const CircleAvatar(
                         radius: 16,
                         backgroundColor: EvaColors.surfaceLight,
-                        child: Text(
-                          '👨‍🏫',
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                        child: Text('👨‍🏫', style: TextStyle(fontSize: 16)),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -335,35 +317,30 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
                           children: [
                             Text(
                               tutorial.instructor,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: EvaColors.textPrimary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: EvaColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             Text(
-                              '${_formatViews(tutorial.views)} • ${tutorial.category}',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: EvaColors.textPrimary.withOpacity(
-                                      0.6,
-                                    ),
-                                  ),
+                              '${_formatViews(tutorial.views)} • $displayCat',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: EvaColors.textPrimary.withOpacity(0.6),
+                              ),
                             ),
                           ],
                         ),
                       ),
                       Row(
                         children: [
-                          Icon(Icons.star, color: Colors.amber, size: 16),
+                          const Icon(Icons.star, color: Colors.amber, size: 16),
                           const SizedBox(width: 4),
                           Text(
                             tutorial.rating.toString(),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: EvaColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: EvaColors.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -378,78 +355,68 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
     );
   }
 
-  Color _getDifficultyColor(String difficulty) {
-    switch (difficulty) {
-      case 'Fácil':
-        return Colors.green;
-      case 'Media':
-        return Colors.orange;
-      case 'Alta':
-        return Colors.red;
-      case 'Avanzado':
-        return Colors.purple;
-      default:
-        return Colors.grey;
+  Color _getDifficultyColor(String key) {
+    switch (key) {
+      case 'easy':     return Colors.green;
+      case 'medium':   return Colors.orange;
+      case 'high':     return Colors.red;
+      case 'advanced': return Colors.purple;
+      default:         return Colors.grey;
     }
   }
 
   String _formatViews(int views) {
-    if (views >= 1000000) {
-      return '${(views / 1000000).toStringAsFixed(1)}M';
-    } else if (views >= 1000) {
-      return '${(views / 1000).toStringAsFixed(1)}K';
-    } else {
-      return views.toString();
-    }
+    if (views >= 1000000) return '${(views / 1000000).toStringAsFixed(1)}M';
+    if (views >= 1000)    return '${(views / 1000).toStringAsFixed(1)}K';
+    return views.toString();
   }
 
-  void _playVideo(VideoTutorial tutorial) {
+  void _playVideo(VideoTutorial tutorial, AppStrings s, bool isEn) {
     if (tutorial.isPremium) {
-      _showPremiumDialog(tutorial);
+      _showPremiumDialog(tutorial, s, isEn);
     } else {
+      final displayTitle = isEn ? tutorial.titleEn : tutorial.title;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Reproduciendo: ${tutorial.title}'),
+          content: Text(s.playingLabel(displayTitle)),
           backgroundColor: EvaColors.vibrantPink,
         ),
       );
     }
   }
 
-  void _showPremiumDialog(VideoTutorial tutorial) {
+  void _showPremiumDialog(VideoTutorial tutorial, AppStrings s, bool isEn) {
+    final displayTitle = isEn ? tutorial.titleEn : tutorial.title;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Contenido Premium'),
+        title: Text(s.premiumContent),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              tutorial.title,
+              displayTitle,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: EvaColors.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Este contenido es exclusivo para miembros Premium.',
-              style: TextStyle(color: Colors.grey),
-            ),
+            Text(s.premiumExclusive, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
-            const Text('Beneficios Premium:'),
+            Text(s.premiumBenefitsTitle),
             const SizedBox(height: 4),
-            const Text('• Acceso a todos los videos'),
-            const Text('• Descargas sin límite'),
-            const Text('• Sin anuncios'),
-            const Text('• Contenido exclusivo'),
+            Text(s.premiumAllVideos),
+            Text(s.premiumDownloads),
+            Text(s.premiumNoAds),
+            Text(s.premiumExclusiveContent),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(s.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -460,65 +427,65 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
               backgroundColor: EvaColors.vibrantPink,
               foregroundColor: EvaColors.textOnVibrant,
             ),
-            child: const Text('Hacerse Premium'),
+            child: Text(s.getPremium),
           ),
         ],
       ),
     );
   }
 
-  void _showSearchDialog() {
+  void _showSearchDialog(AppStrings s) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Buscar Tutoriales'),
-        content: const TextField(
+        title: Text(s.searchTutorials),
+        content: TextField(
           decoration: InputDecoration(
-            hintText: 'Escribe para buscar...',
-            border: OutlineInputBorder(),
+            hintText: s.searchHint,
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(s.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Buscar'),
+            child: Text(s.search),
           ),
         ],
       ),
     );
   }
 
-  void _showFilterDialog() {
+  void _showFilterDialog(AppStrings s) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Filtros'),
+        title: Text(s.filtersLabel),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Dificultad'),
+            Text(s.difficultyFilter),
             Wrap(
               spacing: 8,
               children: [
-                FilterChip(label: const Text('Fácil'), onSelected: (_) {}),
-                FilterChip(label: const Text('Media'), onSelected: (_) {}),
-                FilterChip(label: const Text('Alta'), onSelected: (_) {}),
-                FilterChip(label: const Text('Avanzado'), onSelected: (_) {}),
+                FilterChip(label: Text(s.difficultyEasy),          onSelected: (_) {}),
+                FilterChip(label: Text(s.difficultyMediumLevel),   onSelected: (_) {}),
+                FilterChip(label: Text(s.difficultyHighLevel),     onSelected: (_) {}),
+                FilterChip(label: Text(s.difficultyAdvancedLevel), onSelected: (_) {}),
               ],
             ),
             const SizedBox(height: 16),
-            const Text('Duración'),
-            Wrap(
+            Text(s.durationFilter),
+            const Wrap(
               spacing: 8,
               children: [
-                FilterChip(label: const Text('< 10 min'), onSelected: (_) {}),
-                FilterChip(label: const Text('10-20 min'), onSelected: (_) {}),
-                FilterChip(label: const Text('20-30 min'), onSelected: (_) {}),
-                FilterChip(label: const Text('> 30 min'), onSelected: (_) {}),
+                FilterChip(label: Text('< 10 min'), onSelected: null),
+                FilterChip(label: Text('10-20 min'), onSelected: null),
+                FilterChip(label: Text('20-30 min'), onSelected: null),
+                FilterChip(label: Text('> 30 min'), onSelected: null),
               ],
             ),
           ],
@@ -526,11 +493,11 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
+            child: Text(s.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Aplicar'),
+            child: Text(s.applyFilter),
           ),
         ],
       ),
@@ -541,24 +508,28 @@ class _VideoTutorialsScreenState extends State<VideoTutorialsScreen> {
 class VideoTutorial {
   final String id;
   final String title;
+  final String titleEn;
   final String description;
+  final String descriptionEn;
   final String duration;
   final String thumbnail;
-  final String category;
-  final String difficulty;
+  final String categoryKey;
+  final String difficultyKey;
   final int views;
   final double rating;
   final String instructor;
   final bool isPremium;
 
-  VideoTutorial({
+  const VideoTutorial({
     required this.id,
     required this.title,
+    required this.titleEn,
     required this.description,
+    required this.descriptionEn,
     required this.duration,
     required this.thumbnail,
-    required this.category,
-    required this.difficulty,
+    required this.categoryKey,
+    required this.difficultyKey,
     required this.views,
     required this.rating,
     required this.instructor,

@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../config/app_config.dart';
+import 'api_service_v2.dart';
 
 class PaymentService {
   // Usar configuración centralizada
@@ -15,33 +16,20 @@ class PaymentService {
     required String plan, // 'basic' | 'premium'
     required String period, // 'monthly' | 'annual'
   }) async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
-    }
-
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/create-order'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-            body: jsonEncode({'plan': plan, 'period': period}),
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              throw Exception('Tiempo de espera agotado al crear orden PayPal');
-            },
-          );
+      final response = await http.post(
+        Uri.parse('$baseUrl/create-order'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+        body: jsonEncode({'plan': plan, 'period': period}),
+      ).timeout(AppConfig.paymentTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
+      if (e is ApiException) rethrow;
       throw Exception('Error al crear orden PayPal: $e');
     }
   }
@@ -50,32 +38,19 @@ class PaymentService {
   Future<Map<String, dynamic>> capturePayPalOrder({
     required String orderId,
   }) async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
-    }
-
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/capture-order/$orderId'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              throw Exception('Tiempo de espera agotado al capturar pago');
-            },
-          );
+      final response = await http.post(
+        Uri.parse('$baseUrl/capture-order/$orderId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+      ).timeout(AppConfig.paymentTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
+      if (e is ApiException) rethrow;
       throw Exception('Error al capturar pago: $e');
     }
   }
@@ -86,167 +61,63 @@ class PaymentService {
     required String period, // 'monthly' | 'annual'
     String currency = 'COP', // 'COP' | 'USD'
   }) async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
-    }
-
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/mercado-pago/create-preference'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-            body: jsonEncode({
-              'plan': plan,
-              'period': period,
-              'currency': currency,
-            }),
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              throw Exception('Tiempo de espera agotado al crear preferencia');
-            },
-          );
+      final response = await http.post(
+        Uri.parse('$baseUrl/mercado-pago/create-preference'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+        body: jsonEncode({
+          'plan': plan,
+          'period': period,
+          'currency': currency,
+        }),
+      ).timeout(AppConfig.paymentTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
+      if (e is ApiException) rethrow;
       throw Exception('Error al crear preferencia Mercado Pago: $e');
     }
   }
 
   /// Obtener suscripción actual del usuario
   Future<Map<String, dynamic>> getSubscription() async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
-    }
-
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/subscription'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              throw Exception('Tiempo de espera agotado al obtener suscripción');
-            },
-          );
+      final response = await http.get(
+        Uri.parse('$baseUrl/subscription'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+      ).timeout(AppConfig.apiTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
+      if (e is ApiException) rethrow;
       throw Exception('Error al obtener suscripción: $e');
     }
   }
 
   /// Cancelar suscripción
   Future<Map<String, dynamic>> cancelSubscription() async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
-    }
-
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/cancel-subscription'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              throw Exception('Tiempo de espera agotado al cancelar suscripción');
-            },
-          );
+      final response = await http.post(
+        Uri.parse('$baseUrl/cancel-subscription'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+      ).timeout(AppConfig.paymentTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
+      if (e is ApiException) rethrow;
       throw Exception('Error al cancelar suscripción: $e');
-    }
-  }
-
-  /// Crear sesion de pago con Wompi
-  Future<Map<String, dynamic>> createWompiSession({
-    required String plan,
-    required String period,
-  }) async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado. Por favor, inicia sesion.');
-    }
-
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/wompi/create-session'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-            body: jsonEncode({'plan': plan, 'period': period}),
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              throw Exception('Tiempo de espera agotado al crear sesion Wompi');
-            },
-          );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Error al crear sesion Wompi: $e');
-    }
-  }
-
-  /// Verificar estado de transaccion Wompi
-  Future<Map<String, dynamic>> verifyWompiTransaction({
-    required String reference,
-  }) async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado.');
-    }
-
-    try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/wompi/transaction/$reference'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-          )
-          .timeout(const Duration(seconds: 30));
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
-    } catch (e) {
-      throw Exception('Error al verificar transaccion Wompi: $e');
     }
   }
 
@@ -254,33 +125,64 @@ class PaymentService {
   Future<Map<String, dynamic>> getMercadoPagoPaymentStatus({
     required String paymentId,
   }) async {
-    if (jwtToken == null || jwtToken!.isEmpty) {
-      throw Exception('Token JWT no inicializado. Por favor, inicia sesión.');
-    }
-
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/mercado-pago/payment/$paymentId'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer $jwtToken',
-            },
-          )
-          .timeout(
-            const Duration(seconds: 30),
-            onTimeout: () {
-              throw Exception('Tiempo de espera agotado al obtener estado de pago');
-            },
-          );
+      final response = await http.get(
+        Uri.parse('$baseUrl/mercado-pago/payment/$paymentId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+      ).timeout(AppConfig.paymentTimeout);
 
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Error: ${response.body}');
-      }
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
     } catch (e) {
+      if (e is ApiException) rethrow;
       throw Exception('Error al obtener estado de pago: $e');
+    }
+  }
+
+  /// Crear sesión de pago con Wompi
+  Future<Map<String, dynamic>> createWompiSession({
+    required String plan,
+    required String period,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/wompi/create-session'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+        body: jsonEncode({'plan': plan, 'period': period}),
+      ).timeout(AppConfig.paymentTimeout);
+
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al crear sesión Wompi: $e');
+    }
+  }
+
+  /// Verificar estado de transacción Wompi
+  Future<Map<String, dynamic>> verifyWompiTransaction({
+    required String reference,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/wompi/transaction/$reference'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $jwtToken',
+        },
+      ).timeout(AppConfig.paymentTimeout);
+
+      ApiException.throwIfError(response.statusCode);
+      return jsonDecode(response.body);
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw Exception('Error al verificar transacción Wompi: $e');
     }
   }
 }

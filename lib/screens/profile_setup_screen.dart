@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../l10n/app_strings.dart';
 import '../services/routine_recommendation_service.dart';
 import '../services/user_profile_service.dart';
 import '../theme/eva_colors.dart';
-import '../services/effects_3d_service.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -12,121 +12,131 @@ class ProfileSetupScreen extends StatefulWidget {
   _ProfileSetupScreenState createState() => _ProfileSetupScreenState();
 }
 
-class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
-  final _formKey = GlobalKey<FormState>();
+class _ProfileSetupScreenState extends State<ProfileSetupScreen>
+    with TickerProviderStateMixin {
+  final UserProfileService _userProfileService = UserProfileService.instance;
+  final PageController _pageController = PageController();
+
   bool _isLoading = false;
   bool _isSaving = false;
-  final UserProfileService _userProfileService = UserProfileService.instance;
+  int _currentStep = 0;
+  static const int _totalSteps = 5;
 
-  // Form controllers
+  // Form values
   String? _ageRange;
-  String? _constitution;
   String? _fitnessLevel;
+  String? _constitution;
   bool _kneeSensitive = false;
   String? _pathologies;
   int _dailyTime = 15;
 
-  // Opciones para los selectores
-  final List<String> _ageRanges = ['18-35', '36-55', '55+'];
-  final List<String> _constitutions = [
-    'bajo_peso',
-    'normopeso',
-    'sobrepeso',
-    'obesidad',
-  ];
-  final List<String> _fitnessLevels = ['principiante', 'intermedio', 'avanzado'];
-  final List<String> _pathologiesOptions = [
-    'ninguna',
-    'cardiaca',
-    'respiratoria',
-    'metabolica',
-    'otra',
-  ];
-  final List<int> _dailyTimeOptions = [10, 15, 20];
+  // Animation controllers
+  late AnimationController _heroAnimController;
+  late Animation<double> _heroScaleAnim;
+  late AnimationController _progressController;
+  late Animation<double> _progressAnim;
 
   @override
   void initState() {
     super.initState();
+    _heroAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _heroScaleAnim = CurvedAnimation(
+      parent: _heroAnimController,
+      curve: Curves.elasticOut,
+    );
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _progressAnim = Tween<double>(begin: 0, end: 1 / _totalSteps).animate(
+      CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
+    );
+    _heroAnimController.forward();
+    _progressController.forward();
     _loadCurrentProfile();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _heroAnimController.dispose();
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  void _animateToStep(int step) {
+    _heroAnimController.reset();
+    _heroAnimController.forward();
+    final target = (step + 1) / _totalSteps;
+    _progressAnim = Tween<double>(
+      begin: _progressAnim.value,
+      end: target,
+    ).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
+    _progressController
+      ..reset()
+      ..forward();
+    setState(() => _currentStep = step);
+    _pageController.animateToPage(
+      step,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   Future<void> _loadCurrentProfile() async {
     setState(() => _isLoading = true);
     try {
-      // Cargar perfil del servicio local
       await _userProfileService.initializeProfile();
       final userProfile = _userProfileService.currentUser;
-
       if (userProfile != null) {
         setState(() {
-          // Mapear edad a rango
-          if (userProfile.age <= 35) {
-            _ageRange = '18-35';
-          } else if (userProfile.age <= 55) {
-            _ageRange = '36-55';
-          } else {
-            _ageRange = '55+';
-          }
-
+          if (userProfile.age <= 35) _ageRange = '18-35';
+          else if (userProfile.age <= 55) _ageRange = '36-55';
+          else _ageRange = '55+';
           _fitnessLevel = _normalizeFitnessLevel(userProfile.fitnessLevel);
           _kneeSensitive = userProfile.kneeSensitive;
-          _constitution = 'normopeso'; // Valor por defecto
-          _pathologies = 'ninguna'; // Valor por defecto
-          _dailyTime = 15; // Valor por defecto
-          _isLoading = false;
+          _constitution = 'normopeso';
+          _pathologies = 'ninguna';
         });
-      } else {
-        setState(() => _isLoading = false);
       }
-
-      // También intentar cargar del backend
       try {
         final response = await RoutineRecommendationService.getUserProfile();
-        final profileData = response['data'];
-
+        final data = response['data'];
         setState(() {
-          _ageRange = profileData['ageRange'] ?? _ageRange;
-          _constitution = profileData['constitution'] ?? _constitution;
-          _fitnessLevel = _normalizeFitnessLevel(profileData['fitnessLevel']) ?? _fitnessLevel;
-          _kneeSensitive = profileData['kneeSensitive'] ?? _kneeSensitive;
-          _pathologies = profileData['pathologies'] ?? _pathologies;
-          _dailyTime = profileData['dailyTime'] ?? _dailyTime;
+          _ageRange = data['ageRange'] ?? _ageRange;
+          _constitution = data['constitution'] ?? _constitution;
+          _fitnessLevel = _normalizeFitnessLevel(data['fitnessLevel']) ?? _fitnessLevel;
+          _kneeSensitive = data['kneeSensitive'] ?? _kneeSensitive;
+          _pathologies = data['pathologies'] ?? _pathologies;
+          _dailyTime = data['dailyTime'] ?? _dailyTime;
         });
-      } catch (_) {
-        // Continuar con los datos locales
-      }
+      } catch (_) {}
     } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${AppStrings.of(context).profileLoadError}: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.of(context).profileLoadError}: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSaving = true);
     try {
-      // Guardar en el servicio local primero
-      int userAge = 25; // Valor por defecto
-      if (_ageRange == '18-35')
-        userAge = 25;
-      else if (_ageRange == '36-55')
-        userAge = 45;
-      else if (_ageRange == '55+')
-        userAge = 60;
-
+      int userAge = _ageRange == '18-35' ? 25 : _ageRange == '36-55' ? 45 : 60;
       await _userProfileService.updateProfile(
         name: _userProfileService.currentUser?.name ?? 'Usuario Eva',
         age: userAge,
         kneeSensitive: _kneeSensitive,
         fitnessLevel: _fitnessLevel ?? 'principiante',
       );
-
-      // También intentar guardar en el backend
       try {
-        final response = await RoutineRecommendationService.updateUserProfile(
+        await RoutineRecommendationService.updateUserProfile(
           ageRange: _ageRange!,
           constitution: _constitution!,
           fitnessLevel: _fitnessLevel!,
@@ -134,598 +144,444 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           pathologies: _pathologies!,
           dailyTime: _dailyTime,
         );
-
-        if (response['success']) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.of(context).profileUpdatedOk),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        // Si falla el backend, mostrar éxito localmente
+      } catch (_) {}
+      if (mounted) {
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppStrings.of(context).profileSavedLocally),
-            backgroundColor: Colors.orange,
+            content: Text(AppStrings.of(context).profileUpdatedOk),
+            backgroundColor: EvaColors.activeGreen,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
-        Navigator.pop(context);
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${AppStrings.of(context).profileSaveError}: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${AppStrings.of(context).profileSaveError}: $e')),
+        );
+      }
     } finally {
-      setState(() => _isSaving = false);
+      if (mounted) setState(() => _isSaving = false);
     }
   }
+
+  bool get _canProceed {
+    switch (_currentStep) {
+      case 0: return _ageRange != null;
+      case 1: return _fitnessLevel != null;
+      case 2: return _constitution != null;
+      case 3: return _pathologies != null;
+      case 4: return true;
+      default: return false;
+    }
+  }
+
+  void _next() {
+    if (!_canProceed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.of(context).setupFieldRequired),
+          backgroundColor: EvaColors.cosmicRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+    if (_currentStep < _totalSteps - 1) {
+      _animateToStep(_currentStep + 1);
+    } else {
+      _saveProfile();
+    }
+  }
+
+  void _back() {
+    if (_currentStep > 0) _animateToStep(_currentStep - 1);
+    else Navigator.pop(context);
+  }
+
+  // ─────────────────────────────── BUILD ──────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Effects3DService.backgroundGradient3D.colors[0],
-      appBar: Effects3DService.appBar3D(
-        title: AppStrings.of(context).setupFitnessProfile,
-        gradient: Effects3DService.primaryGradient3D,
-      ),
+      backgroundColor: const Color(0xFF0D0D1A),
       body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  EvaColors.vibrantPink,
+          ? const Center(child: CircularProgressIndicator(color: EvaColors.vibrantPink))
+          : Stack(
+              children: [
+                // Background gradient
+                _buildBackground(),
+                // Content
+                SafeArea(
+                  child: Column(
+                    children: [
+                      _buildTopBar(),
+                      _buildProgressBar(),
+                      Expanded(
+                        child: PageView(
+                          controller: _pageController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            _buildStepAge(),
+                            _buildStepFitnessLevel(),
+                            _buildStepConstitution(),
+                            _buildStepHealth(),
+                            _buildStepTime(),
+                          ],
+                        ),
+                      ),
+                      _buildBottomNav(),
+                    ],
+                  ),
                 ),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildHeaderCard3D(context),
-                    const SizedBox(height: 24),
-                    _buildSectionTitle3D(AppStrings.of(context).basicInfo),
-                    const SizedBox(height: 16),
-
-                    _buildDropdownField3D(
-                      context,
-                      AppStrings.of(context).ageRange,
-                      _ageRange,
-                      _ageRanges,
-                      (value) => setState(() => _ageRange = value),
-                      AppStrings.of(context).ageRangeHint,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildDropdownField3D(
-                      context,
-                      AppStrings.of(context).physicalConstitution,
-                      _constitution,
-                      _constitutions,
-                      (value) => setState(() => _constitution = value),
-                      AppStrings.of(context).constitutionHint,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildDropdownField3D(
-                      context,
-                      AppStrings.of(context).fitnessLevel,
-                      _fitnessLevel,
-                      _fitnessLevels,
-                      (value) => setState(() => _fitnessLevel = value),
-                      AppStrings.of(context).fitnessLevelHint,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    _buildSectionTitle3D(AppStrings.of(context).prefsAndLimitations),
-                    const SizedBox(height: 16),
-
-                    _buildSwitchField3D(
-                      AppStrings.of(context).kneeSensitive,
-                      _kneeSensitive,
-                      (value) => setState(() => _kneeSensitive = value),
-                      AppStrings.of(context).kneeSensitiveDesc,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildDropdownField3D(
-                      context,
-                      AppStrings.of(context).pathologies,
-                      _pathologies,
-                      _pathologiesOptions,
-                      (value) => setState(() => _pathologies = value),
-                      AppStrings.of(context).pathologiesHint,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildDropdownField3D(
-                      context,
-                      AppStrings.of(context).dailyTime,
-                      _dailyTime.toString(),
-                      _dailyTimeOptions.map((e) => e.toString()).toList(),
-                      (value) => setState(() => _dailyTime = int.parse(value!)),
-                      AppStrings.of(context).dailyTimeHint,
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    _buildSaveButton3D(context),
-                  ],
-                ),
-              ),
+              ],
             ),
     );
   }
 
-  Widget _buildHeaderCard3D(BuildContext context) {
-    final s = AppStrings.of(context);
-    return Effects3DService.card3D(
-      gradient: Effects3DService.primaryGradient3D,
-      shadows: Effects3DService.elevatedShadow3D,
-      child: Column(
+  // ── Background ──────────────────────────────────────────────────────────
+
+  Widget _buildBackground() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1a0533),
+            Color(0xFF2D0A4E),
+            Color(0xFF3D0B61),
+            Color(0xFF1a0533),
+          ],
+          stops: [0.0, 0.3, 0.7, 1.0],
+        ),
+      ),
+    );
+  }
+
+  // ── Top bar ─────────────────────────────────────────────────────────────
+
+  Widget _buildTopBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
         children: [
-          Effects3DService.text3D(
-            text: s.createPerfectProfile,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-            shadows: Effects3DService.bigTextShadow3D,
+          GestureDetector(
+            onTap: _back,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withOpacity(0.15)),
+              ),
+              child: const Icon(Icons.arrow_back_ios_new,
+                  color: Colors.white, size: 18),
+            ),
           ),
-          const SizedBox(height: 16),
-          Effects3DService.text3D(
-            text: s.profileSetupSubtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-            shadows: Effects3DService.textShadow3D,
+          Expanded(
+            child: Center(
+              child: Text(
+                '${_currentStep + 1} ${AppStrings.of(context).setupStepOf} $_totalSteps',
+                style: GoogleFonts.raleway(
+                  color: Colors.white60,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+          ),
+          // Logo / branding
+          Text(
+            'EVA',
+            style: GoogleFonts.cormorantGaramond(
+              color: EvaColors.vibrantPink,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 4,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle3D(String title) {
-    return Effects3DService.card3D(
-      gradient: Effects3DService.buttonGradient3D,
-      shadows: Effects3DService.primaryShadow3D,
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      child: Effects3DService.text3D(
-        text: title,
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        shadows: Effects3DService.bigTextShadow3D,
+  // ── Progress bar ────────────────────────────────────────────────────────
+
+  Widget _buildProgressBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Column(
+        children: [
+          Row(
+            children: List.generate(_totalSteps, (i) {
+              final done = i < _currentStep;
+              final active = i == _currentStep;
+              return Expanded(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeInOut,
+                  height: 4,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    gradient: done || active
+                        ? const LinearGradient(colors: [
+                            EvaColors.vibrantPink,
+                            EvaColors.wellnessPurple,
+                          ])
+                        : null,
+                    color: done || active ? null : Colors.white.withOpacity(0.15),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildDropdownField3D(
-    BuildContext context,
-    String label,
-    String? value,
-    List<String> items,
-    Function(String?) onChanged,
-    String hint,
-  ) {
-    return Effects3DService.card3D(
-      shadows: Effects3DService.primaryShadow3D,
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          labelStyle: TextStyle(
-            color: EvaColors.vibrantPink,
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
+  // ── Bottom navigation ────────────────────────────────────────────────────
+
+  Widget _buildBottomNav() {
+    final isLast = _currentStep == _totalSteps - 1;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: GestureDetector(
+        onTap: _canProceed ? _next : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          height: 58,
+          decoration: BoxDecoration(
+            gradient: _canProceed
+                ? const LinearGradient(
+                    colors: [EvaColors.vibrantPink, EvaColors.wellnessPurple],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : null,
+            color: _canProceed ? null : Colors.white.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: _canProceed
+                ? [
+                    BoxShadow(
+                      color: EvaColors.vibrantPink.withOpacity(0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
           ),
-          hintStyle: TextStyle(
-            color: EvaColors.textPrimary.withOpacity(0.7),
-            fontSize: 14,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EvaColors.vibrantPink.withOpacity(0.3),
-              width: 2,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide(
-              color: EvaColors.vibrantPink.withOpacity(0.3),
-              width: 2,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Colors.cyan, width: 3),
-          ),
-          filled: true,
-          fillColor: EvaColors.surfaceLight,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
+          child: Center(
+            child: _isSaving
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                        color: Colors.white, strokeWidth: 2.5),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        isLast ? AppStrings.of(context).setupSaveProfile : AppStrings.of(context).setupContinue,
+                        style: GoogleFonts.raleway(
+                          color: _canProceed ? Colors.white : Colors.white30,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        isLast ? Icons.check_rounded : Icons.arrow_forward_rounded,
+                        color: _canProceed ? Colors.white : Colors.white30,
+                        size: 20,
+                      ),
+                    ],
+                  ),
           ),
         ),
-        dropdownColor: EvaColors.surfaceLight,
-        icon: Effects3DService.icon3D(
-          icon: Icons.arrow_drop_down,
-          color: EvaColors.vibrantPink,
-          size: 28,
-        ),
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Effects3DService.text3D(
-              text: AppStrings.of(context).profileFormatValue(item),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        validator: (value) => value == null ? AppStrings.of(context).fieldRequired : null,
       ),
     );
   }
 
-  Widget _buildSwitchField3D(
-    String label,
-    bool value,
-    Function(bool) onChanged,
-    String description,
-  ) {
-    return Effects3DService.card3D(
-      gradient: Effects3DService.glassDecoration3D().gradient != null
-          ? null
-          : LinearGradient(
-              colors: [
-                EvaColors.surfaceLight,
-                EvaColors.vibrantPink.withOpacity(0.05),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-      shadows: Effects3DService.primaryShadow3D,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Effects3DService.text3D(
-                    text: label,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: EvaColors.textPrimary.withOpacity(0.7),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+  // ── Step scaffold ────────────────────────────────────────────────────────
+
+  Widget _buildStep({
+    required String emoji,
+    required String title,
+    required String subtitle,
+    required Widget body,
+  }) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hero emoji with scale animation
+          ScaleTransition(
+            scale: _heroScaleAnim,
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: EvaColors.vibrantPink.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                    color: EvaColors.vibrantPink.withOpacity(0.3), width: 1.5),
+              ),
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 36)),
               ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                boxShadow: [
+          ),
+          const SizedBox(height: 24),
+          Text(
+            title,
+            style: GoogleFonts.cormorantGaramond(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: GoogleFonts.raleway(
+              color: Colors.white54,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 32),
+          body,
+        ],
+      ),
+    );
+  }
+
+  // ── Option card ──────────────────────────────────────────────────────────
+
+  Widget _buildOptionCard({
+    required String value,
+    required String? selectedValue,
+    required String label,
+    required String emoji,
+    String? description,
+    required VoidCallback onTap,
+    bool wide = false,
+  }) {
+    final selected = selectedValue == value;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: wide ? 20 : 14,
+        ),
+        decoration: BoxDecoration(
+          gradient: selected
+              ? const LinearGradient(
+                  colors: [
+                    Color(0x33FF69B4),
+                    Color(0x22800080),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: selected ? null : Colors.white.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected
+                ? EvaColors.vibrantPink.withOpacity(0.8)
+                : Colors.white.withOpacity(0.1),
+            width: selected ? 1.5 : 1,
+          ),
+          boxShadow: selected
+              ? [
                   BoxShadow(
-                    color: value
-                        ? Colors.cyan.withOpacity(0.4)
-                        : EvaColors.vibrantPink.withOpacity(0.4),
+                    color: EvaColors.vibrantPink.withOpacity(0.2),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
-                ],
-              ),
-              child: Switch(
-                value: value,
-                onChanged: onChanged,
-                activeColor: Colors.cyan,
-                activeTrackColor: EvaColors.vibrantPink.withOpacity(0.6),
-                inactiveThumbColor: EvaColors.vibrantPink,
-                inactiveTrackColor: EvaColors.vibrantPink.withOpacity(0.3),
-              ),
-            ),
-          ],
+                ]
+              : null,
         ),
-      ),
-    );
-  }
-
-  Widget _buildSaveButton3D(BuildContext context) {
-    return Effects3DService.button3D(
-      onPressed: _isSaving ? () {} : _saveProfile,
-      gradient: Effects3DService.primaryGradient3D,
-      shadows: Effects3DService.elevatedShadow3D,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 32),
-      child: _isSaving
-          ? SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 3,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            )
-          : Effects3DService.text3D(
-              text: AppStrings.of(context).saveProfile,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              shadows: Effects3DService.bigTextShadow3D,
-            ),
-    );
-  }
-
-  Widget _buildHeaderCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [EvaColors.vibrantPink, EvaColors.vibrantPink, Colors.cyan],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: EvaColors.vibrantPink.withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          ShaderMask(
-            shaderCallback: (bounds) => const LinearGradient(
-              colors: [Colors.white, Colors.cyanAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ).createShader(bounds),
-            child: const Text(
-              '💪 Crea Tu Perfil Perfecto',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                shadows: [
-                  Shadow(
-                    blurRadius: 3.0,
-                    color: Colors.black26,
-                    offset: Offset(2, 2),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ShaderMask(
-            shaderCallback: (bounds) => const LinearGradient(
-              colors: [Colors.white, EvaColors.vibrantPink],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ).createShader(bounds),
-            child: const Text(
-              'Personaliza tu experiencia de fitness con rutinas adaptadas a tus necesidades y objetivos específicos.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white,
-                shadows: [
-                  Shadow(
-                    blurRadius: 2.0,
-                    color: Colors.black26,
-                    offset: Offset(1, 1),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [EvaColors.vibrantPink, Colors.cyan],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: EvaColors.vibrantPink.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ShaderMask(
-        shaderCallback: (bounds) => const LinearGradient(
-          colors: [Colors.white, Colors.cyanAccent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ).createShader(bounds),
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            shadows: [
-              Shadow(
-                blurRadius: 2.0,
-                color: Colors.black26,
-                offset: Offset(1, 1),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGradientDropdownField(
-    String label,
-    String? value,
-    List<String> items,
-    Function(String?) onChanged,
-    String hint,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: EvaColors.vibrantPink.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration: InputDecoration(
-          labelText: label,
-          hintText: hint,
-          labelStyle: TextStyle(
-            color: EvaColors.vibrantPink,
-            fontWeight: FontWeight.w600,
-          ),
-          hintStyle: TextStyle(color: EvaColors.textPrimary.withOpacity(0.6)),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: EvaColors.vibrantPink.withOpacity(0.3),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: EvaColors.vibrantPink.withOpacity(0.3),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.cyan, width: 2),
-          ),
-          filled: true,
-          fillColor: EvaColors.surfaceLight,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
-        ),
-        dropdownColor: EvaColors.surfaceLight,
-        icon: Icon(Icons.arrow_drop_down, color: EvaColors.vibrantPink),
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: [EvaColors.vibrantPink, Colors.cyan],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
-              child: Text(
-                _formatDisplayText(item),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        validator: (value) => value == null ? AppStrings.of(context).fieldRequired : null,
-      ),
-    );
-  }
-
-  Widget _buildGradientSwitchField(
-    String label,
-    bool value,
-    Function(bool) onChanged,
-    String description,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            EvaColors.surfaceLight,
-            EvaColors.vibrantPink.withOpacity(0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: EvaColors.vibrantPink.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: selected
+                    ? EvaColors.vibrantPink.withOpacity(0.2)
+                    : Colors.white.withOpacity(0.07),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 22)),
+              ),
+            ),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [EvaColors.vibrantPink, Colors.cyan],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds),
-                    child: Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                  Text(
+                    label,
+                    style: GoogleFonts.raleway(
+                      color: selected ? Colors.white : Colors.white70,
+                      fontSize: 15,
+                      fontWeight:
+                          selected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                  ),
+                  if (description != null) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      description,
+                      style: GoogleFonts.raleway(
+                        color: selected
+                            ? Colors.white60
+                            : Colors.white30,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    description,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: EvaColors.textPrimary.withOpacity(0.7),
-                    ),
-                  ),
+                  ],
                 ],
               ),
             ),
-            Switch(
-              value: value,
-              onChanged: onChanged,
-              activeColor: Colors.cyan,
-              activeTrackColor: EvaColors.vibrantPink.withOpacity(0.5),
-              inactiveThumbColor: EvaColors.vibrantPink,
-              inactiveTrackColor: EvaColors.vibrantPink.withOpacity(0.2),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: 22,
+              height: 22,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: selected
+                    ? const LinearGradient(
+                        colors: [EvaColors.vibrantPink, EvaColors.wellnessPurple])
+                    : null,
+                border: selected
+                    ? null
+                    : Border.all(color: Colors.white24, width: 1.5),
+              ),
+              child: selected
+                  ? const Icon(Icons.check, color: Colors.white, size: 13)
+                  : null,
             ),
           ],
         ),
@@ -733,68 +589,328 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 
-  Widget _buildGradientSaveButton() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [EvaColors.vibrantPink, Colors.cyan],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: EvaColors.vibrantPink.withOpacity(0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+  // ─────────────────── STEP 1: EDAD ───────────────────────────────────────
+
+  Widget _buildStepAge() {
+    final s = AppStrings.of(context);
+    final options = [
+      {'value': '18-35', 'emoji': '🌸', 'label': s.setupAge1835,   'desc': s.setupAge1835Desc},
+      {'value': '36-55', 'emoji': '🌺', 'label': s.setupAge3655,   'desc': s.setupAge3655Desc},
+      {'value': '55+',   'emoji': '🌷', 'label': s.setupAge55plus, 'desc': s.setupAge55plusDesc},
+    ];
+    return _buildStep(
+      emoji: '🌸',
+      title: s.setupAgeTitle,
+      subtitle: s.setupAgeSubtitle,
+      body: Column(
+        children: options.map((o) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _buildOptionCard(
+            value: o['value']!,
+            selectedValue: _ageRange,
+            label: o['label']!,
+            emoji: o['emoji']!,
+            description: o['desc']!,
+            wide: true,
+            onTap: () => setState(() => _ageRange = o['value']),
           ),
-        ],
+        )).toList(),
       ),
-      child: ElevatedButton(
-        onPressed: _isSaving ? null : _saveProfile,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          foregroundColor: EvaColors.textOnVibrant,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+    );
+  }
+
+  // ─────────────────── STEP 2: FITNESS LEVEL ──────────────────────────────
+
+  Widget _buildStepFitnessLevel() {
+    final s = AppStrings.of(context);
+    final options = [
+      {'value': 'principiante', 'emoji': '🌱', 'label': s.setupLevelBeginner,     'desc': s.setupLevelBeginnerDesc},
+      {'value': 'intermedio',   'emoji': '⚡', 'label': s.setupLevelIntermediate, 'desc': s.setupLevelIntermediateDesc},
+      {'value': 'avanzado',     'emoji': '🔥', 'label': s.setupLevelAdvanced,     'desc': s.setupLevelAdvancedDesc},
+    ];
+    return _buildStep(
+      emoji: '💪',
+      title: s.setupLevelTitle,
+      subtitle: s.setupLevelSubtitle,
+      body: Column(
+        children: options.map((o) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _buildOptionCard(
+            value: o['value']!,
+            selectedValue: _fitnessLevel,
+            label: o['label']!,
+            emoji: o['emoji']!,
+            description: o['desc']!,
+            wide: true,
+            onTap: () => setState(() => _fitnessLevel = o['value']),
           ),
-          elevation: 0,
-        ),
-        child: _isSaving
-            ? SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        )).toList(),
+      ),
+    );
+  }
+
+  // ─────────────────── STEP 3: CONSTITUCIÓN ───────────────────────────────
+
+  Widget _buildStepConstitution() {
+    final s = AppStrings.of(context);
+    final options = [
+      {'value': 'bajo_peso', 'emoji': '🕊️', 'label': s.setupBodyUnderweight, 'desc': s.setupBodyUnderDesc},
+      {'value': 'normopeso', 'emoji': '✨',  'label': s.setupBodyHealthy,     'desc': s.setupBodyHealthyDesc},
+      {'value': 'sobrepeso', 'emoji': '🌿',  'label': s.setupBodyOverweight,  'desc': s.setupBodyOverDesc},
+      {'value': 'obesidad',  'emoji': '🌻',  'label': s.setupBodyObese,       'desc': s.setupBodyObeseDesc},
+    ];
+    return _buildStep(
+      emoji: '🌺',
+      title: s.setupBodyTitle,
+      subtitle: s.setupBodySubtitle,
+      body: Column(
+        children: options.map((o) => Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _buildOptionCard(
+            value: o['value']!,
+            selectedValue: _constitution,
+            label: o['label']!,
+            emoji: o['emoji']!,
+            description: o['desc']!,
+            wide: true,
+            onTap: () => setState(() => _constitution = o['value']),
+          ),
+        )).toList(),
+      ),
+    );
+  }
+
+  // ─────────────────── STEP 4: SALUD ──────────────────────────────────────
+
+  Widget _buildStepHealth() {
+    final s = AppStrings.of(context);
+    final pathOptions = [
+      {'value': 'ninguna',      'emoji': '💚', 'label': s.setupHealthNone},
+      {'value': 'cardiaca',     'emoji': '❤️', 'label': s.setupHealthCardiac},
+      {'value': 'respiratoria', 'emoji': '💨', 'label': s.setupHealthRespiratory},
+      {'value': 'metabolica',   'emoji': '⚗️', 'label': s.setupHealthMetabolic},
+      {'value': 'otra',         'emoji': '🩺', 'label': s.setupHealthOther},
+    ];
+    return _buildStep(
+      emoji: '🏥',
+      title: s.setupHealthTitle,
+      subtitle: s.setupHealthSubtitle,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Knee sensitive toggle
+          GestureDetector(
+            onTap: () => setState(() => _kneeSensitive = !_kneeSensitive),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+              decoration: BoxDecoration(
+                gradient: _kneeSensitive
+                    ? const LinearGradient(
+                        colors: [Color(0x33FF69B4), Color(0x22800080)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: _kneeSensitive ? null : Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _kneeSensitive
+                      ? EvaColors.vibrantPink.withOpacity(0.8)
+                      : Colors.white.withOpacity(0.1),
+                  width: 1.5,
                 ),
-              )
-            : ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Colors.white, Colors.cyanAccent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ).createShader(bounds),
-                child: const Text(
-                  'Guardar Perfil',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 2.0,
-                        color: Colors.black26,
-                        offset: Offset(1, 1),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: _kneeSensitive
+                          ? EvaColors.vibrantPink.withOpacity(0.2)
+                          : Colors.white.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                    child: const Center(
+                      child: Text('🦵', style: TextStyle(fontSize: 22)),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppStrings.of(context).setupKneeSensitive,
+                          style: GoogleFonts.raleway(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          AppStrings.of(context).setupKneeSensitiveDesc,
+                          style: GoogleFonts.raleway(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: _kneeSensitive,
+                    onChanged: (v) => setState(() => _kneeSensitive = v),
+                    activeColor: EvaColors.vibrantPink,
+                    activeTrackColor: EvaColors.vibrantPink.withOpacity(0.3),
+                    inactiveThumbColor: Colors.white38,
+                    inactiveTrackColor: Colors.white12,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            AppStrings.of(context).setupHealthCondition,
+            style: GoogleFonts.raleway(
+              color: Colors.white60,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 2.6,
+            children: pathOptions.map((o) {
+              final sel = _pathologies == o['value'];
+              return GestureDetector(
+                onTap: () => setState(() => _pathologies = o['value']),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  decoration: BoxDecoration(
+                    gradient: sel
+                        ? const LinearGradient(
+                            colors: [Color(0x33FF69B4), Color(0x22800080)],
+                          )
+                        : null,
+                    color: sel ? null : Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: sel
+                          ? EvaColors.vibrantPink.withOpacity(0.8)
+                          : Colors.white.withOpacity(0.1),
+                      width: sel ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(o['emoji']!, style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          o['label']!,
+                          style: GoogleFonts.raleway(
+                            color: sel ? Colors.white : Colors.white60,
+                            fontSize: 12,
+                            fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
                 ),
-              ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
+
+  // ─────────────────── STEP 5: TIEMPO ─────────────────────────────────────
+
+  Widget _buildStepTime() {
+    final s = AppStrings.of(context);
+    final options = [
+      {'value': 10, 'emoji': '⚡', 'label': s.setupTime10, 'desc': s.setupTime10Desc},
+      {'value': 15, 'emoji': '🌟', 'label': s.setupTime15, 'desc': s.setupTime15Desc},
+      {'value': 20, 'emoji': '🔥', 'label': s.setupTime20, 'desc': s.setupTime20Desc},
+    ];
+    return _buildStep(
+      emoji: '⏱️',
+      title: s.setupTimeTitle,
+      subtitle: s.setupTimeSubtitle,
+      body: Column(
+        children: [
+          ...options.map((o) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildOptionCard(
+              value: o['value'].toString(),
+              selectedValue: _dailyTime.toString(),
+              label: o['label']! as String,
+              emoji: o['emoji']! as String,
+              description: o['desc']! as String,
+              wide: true,
+              onTap: () => setState(() => _dailyTime = o['value'] as int),
+            ),
+          )),
+          const SizedBox(height: 24),
+          // Motivational close
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.04),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withOpacity(0.08)),
+            ),
+            child: Row(
+              children: [
+                const Text('✨', style: TextStyle(fontSize: 28)),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppStrings.of(context).setupAlmostDone,
+                        style: GoogleFonts.cormorantGaramond(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        AppStrings.of(context).setupAlmostDoneDesc,
+                        style: GoogleFonts.raleway(
+                          color: Colors.white54,
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────── HELPERS ─────────────────────────────────────────────
 
   String? _normalizeFitnessLevel(dynamic value) {
     if (value == null) return null;
@@ -803,46 +919,6 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       case 'intermediate': return 'intermedio';
       case 'advanced': return 'avanzado';
       default: return value.toString();
-    }
-  }
-
-  String _formatDisplayText(String value) {
-    switch (value) {
-      case '18-35':
-        return '18-35 años';
-      case '36-55':
-        return '36-55 años';
-      case '55+':
-        return '55+ años';
-      case 'bajo_peso':
-        return 'Bajo peso';
-      case 'normopeso':
-        return 'Normopeso';
-      case 'sobrepeso':
-        return 'Sobrepeso';
-      case 'obesidad':
-        return 'Obesidad';
-      case 'beginner':
-      case 'principiante':
-        return 'Principiante';
-      case 'intermediate':
-      case 'intermedio':
-        return 'Intermedio';
-      case 'advanced':
-      case 'avanzado':
-        return 'Avanzado';
-      case 'ninguna':
-        return 'Ninguna';
-      case 'cardiaca':
-        return 'Cardíaca';
-      case 'respiratoria':
-        return 'Respiratoria';
-      case 'metabolica':
-        return 'Metabólica';
-      case 'otra':
-        return 'Otra';
-      default:
-        return value;
     }
   }
 }

@@ -11,6 +11,7 @@ class AppStrings {
   }
 
   String t(String es, String en) => _en ? en : es;
+  String get languageCode => _en ? 'en' : 'es';
 
   // ── Drawer / Navegación ──────────────────────────────────────────────────
   String get home         => t('Inicio', 'Home');
@@ -61,6 +62,11 @@ class AppStrings {
   // ── Home screen ──────────────────────────────────────────────────────────
   String get appName           => t('Eva Strong', 'Eva Strong');
   String get motivationalTitle => t('EVA EVOLUCIONA', 'EVA EVOLVES');
+  String get homeTagline => t(
+    'Evastrong: transforma tu cuerpo con minutos al día,\ncuida tu salud y enamórate de\nla mujer fuerte que ya eres.',
+    'Evastrong: transform your body in minutes a day,\ntake care of your health and fall in love with\nthe strong woman you already are.',
+  );
+  String get contactSubtitle => t('Síguenos en nuestras redes', 'Follow us on social media');
   String get subscriptionTitle => t('Elige tu Plan', 'Choose your Plan');
   String get trainBtn          => t('Entrenar', 'Train');
   String get achievementsBtn   => t('Logros', 'Achievements');
@@ -162,8 +168,57 @@ class AppStrings {
   String get resting         => t('Descansando...', 'Resting...');
   String get rest            => t('Descansa', 'Rest');
   String get skipExercise    => t('Saltar ejercicio', 'Skip exercise');
+  String get nextExercise    => t('Siguiente ejercicio', 'Next exercise');
   String get howToDo         => t('Cómo hacerlo', 'How to do it');
   String get series          => t('SERIE', 'SET');
+  // Trainer motivational messages during execution
+  String get trainerSet1     => t('¡Comenzamos! Mantén buena postura', 'Let\'s go! Keep good posture');
+  String get trainerLastSet  => t('¡Última serie! Todo lo que tienes 🔥', 'Last set! Give it everything 🔥');
+  String get trainerSet2of3  => t('¡Muy bien! Sigue el ritmo, ya vas', 'Great! Keep the rhythm, you\'ve got this');
+  String get trainerGeneric  => t('¡Fantástico! Ya casi terminas este ejercicio', 'Fantastic! Almost done with this one');
+  String get trainerSetRest  => t('¡Bien hecho! Recupera el aliento...', 'Well done! Catch your breath...');
+  String get trainerExRest   => t('¡Perfecto! Descansa antes del siguiente ejercicio', 'Perfect! Rest before the next exercise');
+  // Zone labels — handles both snake_case backend keys and capitalized Spanish DB values
+  String exerciseZone(String zone) {
+    switch (zone.toLowerCase()) {
+      case 'cuerpo_entero':
+      case 'cuerpo_completo':
+      case 'cuerpo completo':
+      case 'full_body':
+      case 'full body':           return t('Cuerpo completo', 'Full body');
+      case 'piernas_gluteos':
+      case 'gluteos_piernas':
+      case 'piernas y glúteos':
+      case 'glúteos y piernas':
+      case 'glúteos y muslos':
+      case 'legs & glutes':       return t('Piernas y glúteos', 'Legs & glutes');
+      case 'glúteos':             return t('Glúteos', 'Glutes');
+      case 'core':
+      case 'core completo':
+      case 'core y piernas':      return 'Core';
+      case 'tren_superior':
+      case 'brazos y hombros':
+      case 'brazos completos':    return t('Tren superior', 'Upper body');
+      case 'tren_inferior':       return t('Tren inferior', 'Lower body');
+      case 'espalda':
+      case 'espalda y caderas':   return t('Espalda', 'Back');
+      case 'pecho':               return t('Pecho', 'Chest');
+      case 'hombros':             return t('Hombros', 'Shoulders');
+      case 'brazos':
+      case 'bíceps':
+      case 'tríceps':             return t('Brazos', 'Arms');
+      case 'pantorrillas':        return t('Pantorrillas', 'Calves');
+      case 'abdomen':
+      case 'abdomen superior':    return t('Abdomen', 'Abs');
+      case 'cintura y oblicuos':
+      case 'oblicuos y cintura':
+      case 'oblicuos':            return t('Oblicuos', 'Obliques');
+      case 'caderas':             return t('Caderas', 'Hips');
+      case 'piernas':             return t('Piernas', 'Legs');
+      case 'respiración':         return t('Respiración', 'Breathing');
+      default:                    return zone.replaceAll('_', ' ');
+    }
+  }
   String get congratulations => t('¡Felicitaciones!', 'Congratulations!');
   String get routineComplete => t('¡Rutina completada!', 'Workout complete!');
   String get restartRoutine  => t('Volver a empezar', 'Restart');
@@ -204,6 +259,119 @@ class AppStrings {
   }
   String setLabel(int current, int total) =>
       t('Serie $current de $total', 'Set $current of $total');
+
+  // ── Plan Semanal (DietPlansScreen) ──────────────────────────────────────
+  String get weeklyPlanScreenSubtitle => t(
+    '7 días de alimentación diseñados para tus objetivos',
+    '7 days of nutrition designed for your goals',
+  );
+  String get planHowToUseTitle => t('Cómo usar el plan', 'How to use the plan');
+  String get planHowToUseDesc  => t(
+    'Cada día tiene un enfoque diferente. Sigue el orden de las comidas y ajusta las porciones a tu hambre.',
+    'Each day has a different focus. Follow the meal order and adjust your portions to your hunger.',
+  );
+  String get comingSoon        => t('Próximamente', 'Coming soon');
+  String get comingSoonEllipsis => t('Próximamente...', 'Coming soon...');
+  String get plansOnTheWay     => t('Los planes están en camino 💪', 'Plans are on the way 💪');
+  String get checkBackSoon     => t('Vuelve pronto', 'Check back soon');
+  String get dayBadge          => t('DÍA', 'DAY');
+  String dayLabel(int n)       => t('Día $n', 'Day $n');
+  String mealsCount(int a, int total) => t('$a/$total comidas', '$a/$total meals');
+
+  String planThemeLabel(String theme) {
+    switch (theme) {
+      case 'perdida_peso':    return t('Pérdida de peso',    'Weight loss');
+      case 'gluteos_piernas': return t('Cola y piernas',     'Glutes & legs');
+      case 'piel_radiante':   return t('Piel radiante',      'Radiant skin');
+      case 'saciedad':        return t('Saciedad alta',      'High satiety');
+      case 'gluteos_heavy':   return t('Glúteos heavy',      'Heavy glutes');
+      case 'bienestar':       return t('Bienestar general',  'General wellness');
+      case 'equilibrado':     return t('Mix equilibrado',    'Balanced mix');
+      default:                return theme;
+    }
+  }
+
+  String pendingDayLabel(int day) {
+    switch (day) {
+      case 2: return t('Cola/piernas — más carbos',     'Glutes/legs — more carbs');
+      case 3: return t('Piel radiante y ojeras',         'Radiant skin & dark circles');
+      case 4: return t('Pérdida de peso + saciedad',     'Weight loss + satiety');
+      case 5: return t('Glúteos heavy',                  'Heavy glutes');
+      case 6: return t('Piel y bienestar general',       'Skin & general wellness');
+      case 7: return t('Mix equilibrado',                'Balanced mix');
+      default: return comingSoonEllipsis;
+    }
+  }
+
+  // ── Rutinas (snackbars / acciones) ───────────────────────────────────────
+  String get routineGeneratedSuccess => t('¡Rutina generada exitosamente!', 'Routine generated successfully!');
+
+  // ── Logros (adicionales) ─────────────────────────────────────────────────
+  String achievementUnlocked(String names) =>
+      t('🎉 ¡Nuevo logro desbloqueado! $names', '🎉 New achievement unlocked! $names');
+  String get trophiesWaiting => t('¡Tus trofeos te esperan!', 'Your trophies await!');
+  String get completeToUnlockMsg => t(
+    'Completa rutinas para desbloquear logros y acumular XP.',
+    'Complete routines to unlock achievements and accumulate XP.',
+  );
+
+  // ── Suscripción — cancelación ─────────────────────────────────────────────
+  String get cancelSubscriptionTitle    => t('Cancelar Suscripción', 'Cancel Subscription');
+  String get cancelSubscriptionConfirm  => t(
+    '¿Estás seguro de que quieres cancelar tu suscripción? Perderás acceso a todas las características premium.',
+    'Are you sure you want to cancel your subscription? You will lose access to all premium features.',
+  );
+  String get keepSubscription           => t('No, mantener suscripción', 'No, keep subscription');
+  String get yesCancelSubscription      => t('Sí, cancelar', 'Yes, cancel');
+  String get subscriptionCancelledOk    => t('Suscripción cancelada exitosamente', 'Subscription cancelled successfully');
+
+  // ── Ejecución de rutina (adicional) ──────────────────────────────────────
+  String get viewDemo => t('Ver demostración', 'View demonstration');
+
+  // ── Wearables ─────────────────────────────────────────────────────────────
+  String get editGoalsTitle      => t('Editar Metas', 'Edit Goals');
+  String get editGoalsComingSoon => t('Función de edición de metas próximamente...', 'Goal editing feature coming soon...');
+
+  // ── Contacto — redes sociales ─────────────────────────────────────────────
+  String get instagramSubtitle => t('@evastrong · Síguenos',           '@evastrong · Follow us');
+  String get facebookSubtitle  => t('EvaStrong · Síguenos',            'EvaStrong · Follow us');
+  String get pinterestSubtitle => t('@evastrong · Inspírate',          '@evastrong · Get inspired');
+  String get emailSubtitle     => t('soporte@evastrong.app · Escríbenos', 'soporte@evastrong.app · Write to us');
+  String get emailLabel        => t('Correo', 'Email');
+
+  // ── Carrusel home ─────────────────────────────────────────────────────────
+  List<String> get carouselTexts => _en
+      ? const [
+          'Transform your body, transform your life',
+          'Every rep brings you closer to your best self',
+          'Strength, discipline and consistency',
+          'You can. You will. You\'ll make it happen',
+          'The change starts today',
+        ]
+      : const [
+          'Transforma tu cuerpo, transforma tu vida',
+          'Cada rep te acerca a tu mejor versión',
+          'Fuerza, disciplina y constancia',
+          'Tú puedes. Tú lo harás. Tú lo lograrás',
+          'El cambio empieza hoy',
+        ];
+
+  // Carrusel secundario (_AutoCarousel)
+  List<String> get autoCarouselTexts => _en
+      ? const [
+          '💪 Transform your body, transform your life',
+          '🔥 Today\'s pain is tomorrow\'s strength',
+          '🌟 Every rep brings you closer to your best self',
+          '⚡ Don\'t give up, the best is yet to come',
+          '🏆 Champions are made when no one is watching',
+        ]
+      : const [
+          '💪 Transforma tu cuerpo, transforma tu vida',
+          '🔥 El dolor de hoy es la fuerza del mañana',
+          '🌟 Cada repetición te acerca a tu mejor versión',
+          '⚡ No te rindas, lo mejor está por venir',
+          '🏆 Los campeones se hacen cuando nadie está mirando',
+        ];
 
   // ── Dietas & Recetas ─────────────────────────────────────────────────────
   String get dietTitle      => t('Dietas & Recetas', 'Diets & Recipes');
@@ -593,6 +761,233 @@ class AppStrings {
       case 'soporte': return t('Soporte', 'Support');
       case 'otro':    return t('Otro', 'Other');
       default:        return key;
+    }
+  }
+
+  // ── Categorías de rutinas ────────────────────────────────────────────────
+  String routineCategory(String key) {
+    switch (key) {
+      case 'strength':    return t('Fuerza', 'Strength');
+      case 'cardio':      return t('Cardio', 'Cardio');
+      case 'flexibility': return t('Flexibilidad', 'Flexibility');
+      case 'hiit':        return 'HIIT';
+      case 'pilates':     return 'Pilates';
+      case 'yoga':        return 'Yoga';
+      case 'crossfit':    return 'CrossFit';
+      case 'functional':
+      case 'funcional':   return t('Funcional', 'Functional');
+      case 'gluteos':     return t('Glúteos', 'Glutes');
+      case 'other':
+      case 'otro':        return t('Otro', 'Other');
+      default:            return key;
+    }
+  }
+
+  String routineDifficulty(String key) {
+    switch (key) {
+      case 'beginner':
+      case 'principiante': return t('Principiante', 'Beginner');
+      case 'intermediate':
+      case 'intermedio':   return t('Intermedio', 'Intermediate');
+      case 'advanced':
+      case 'avanzado':     return t('Avanzado', 'Advanced');
+      case 'expert':       return t('Experto', 'Expert');
+      default:             return profileFormatValue(key);
+    }
+  }
+
+  String ratingsCount(int n) =>
+      t('$n valoracion${n == 1 ? '' : 'es'}', '$n rating${n == 1 ? '' : 's'}');
+
+  String get startWorkout => t('¡Empezar!', 'Start!');
+  String get startRoutineLabel => t('¡Empezar rutina!', 'Start workout!');
+
+  /// Translates a raw routine tag (may be in Spanish or English)
+  String routineTag(String tag) {
+    switch (tag.toLowerCase()) {
+      case 'gluteos':
+      case 'glúteos':         return t('Glúteos', 'Glutes');
+      case 'tren_inferior':   return t('Tren inferior', 'Lower body');
+      case 'tren_superior':   return t('Tren superior', 'Upper body');
+      case 'principiante':    return t('Principiante', 'Beginner');
+      case 'intermedio':      return t('Intermedio', 'Intermediate');
+      case 'avanzado':        return t('Avanzado', 'Advanced');
+      case 'sin_material':    return t('Sin material', 'No equipment');
+      case 'sin equipo':      return t('Sin equipo', 'No equipment');
+      case 'colchoneta':      return t('Colchoneta', 'Mat');
+      case 'core':            return 'Core';
+      case 'abdomen':         return t('Abdomen', 'Abs');
+      case 'cintura':         return t('Cintura', 'Waist');
+      case 'piernas':         return t('Piernas', 'Legs');
+      case 'brazos':          return t('Brazos', 'Arms');
+      case 'espalda':         return t('Espalda', 'Back');
+      case 'cardio':          return 'Cardio';
+      case 'hiit':            return 'HIIT';
+      case 'pilates':         return 'Pilates';
+      case 'yoga':            return 'Yoga';
+      case 'funcional':
+      case 'functional':      return t('Funcional', 'Functional');
+      case 'quemar grasa':
+      case 'quema grasa':     return t('Quema grasa', 'Fat burn');
+      case 'vientre plano':   return t('Vientre plano', 'Flat belly');
+      case 'free':            return t('Gratis', 'Free');
+      case 'premium':         return 'Premium';
+      case 'fuerza':          return t('Fuerza', 'Strength');
+      case 'flexibilidad':    return t('Flexibilidad', 'Flexibility');
+      default:                return tag;
+    }
+  }
+
+  String exerciseType(String key) {
+    switch (key) {
+      case 'fuerza':         return t('Fuerza', 'Strength');
+      case 'cardio_suave':   return t('Cardio suave', 'Light cardio');
+      case 'cardio_intenso': return t('Cardio intenso', 'Intense cardio');
+      case 'movilidad':      return t('Movilidad', 'Mobility');
+      case 'flexibilidad':   return t('Flexibilidad', 'Flexibility');
+      case 'equilibrio':     return t('Equilibrio', 'Balance');
+      default:               return key;
+    }
+  }
+
+  // ── Pantalla de rutinas ───────────────────────────────────────────────────
+  String get noRoutinesAvailable => t('No hay rutinas disponibles', 'No routines available');
+  String get clearFilters        => t('Limpiar filtros', 'Clear filters');
+  String get noResults           => t('Sin resultados', 'No results');
+  String get noFavoritesYet      => t('Aún no tienes favoritas', 'No favorites yet');
+  String get noWorkoutsYet       => t('Sin entrenamientos aún', 'No workouts yet');
+  String get latestWorkouts      => t('Últimos entrenamientos', 'Latest workouts');
+  String get totalProgress       => t('Tu progreso total', 'Your total progress');
+  String get minutesLabel        => t('Minutos', 'Minutes');
+  String get noResultsFilters    => t('Sin resultados para estos filtros', 'No results for these filters');
+  String get filtersLabel        => t('Filtros', 'Filters');
+  String get kneeAdapted         => t('Adaptada para sensibilidad en rodillas', 'Adapted for knee sensitivity');
+  String get levelLabel          => t('Nivel', 'Level');
+  String get categoryLabel       => t('Categoría', 'Category');
+  String get kneesLabel          => t('Rodillas', 'Knees');
+  String get noRestriction       => t('Sin restricción', 'No restriction');
+  String get withSensitivity     => t('Con sensibilidad', 'With sensitivity');
+  String get useTemplate         => t('Usar plantilla', 'Use template');
+  String get instructorLabel     => t('Instructor', 'Instructor');
+  String get durationLabel       => t('Duración', 'Duration');
+  String get intensityLabel      => t('Intensidad', 'Intensity');
+  String get subscribe           => t('Suscribirse', 'Subscribe');
+
+  // ── Video tutoriales ──────────────────────────────────────────────────────
+  String get videoTutorialsTitle     => t('Video Tutoriales', 'Video Tutorials');
+  String get premiumContent          => t('Contenido Premium', 'Premium Content');
+  String get premiumRoutineMsg       => t('Esta rutina requiere suscripción.\n¿Quieres ver los planes disponibles?', 'This routine requires a subscription.\nWould you like to see the available plans?');
+  String get premiumDialogBadge      => t('✦ EVA STRONG PREMIUM ✦', '✦ EVA STRONG PREMIUM ✦');
+  String get premiumDialogHeadline   => t('Desbloquea tu\nmejor versión', 'Unlock Your\nBest Self');
+  String get premiumDialogSub        => t('Accede a rutinas exclusivas diseñadas\npara transformar tu cuerpo y mente.', 'Access exclusive routines designed\nto transform your body and mind.');
+  String get premiumBenefit1         => t('Más de 200 rutinas exclusivas', '200+ exclusive workouts');
+  String get premiumBenefit2         => t('Planes personalizados con IA', 'AI-personalized training plans');
+  String get premiumBenefit3         => t('Seguimiento de progreso avanzado', 'Advanced progress tracking');
+  String get premiumDialogCta        => t('Comenzar mi transformación', 'Start My Transformation');
+  String get premiumDialogDecline    => t('Quizás más tarde', 'Maybe later');
+  String get premiumExclusive        => t('Este contenido es exclusivo para miembros Premium.', 'This content is exclusive to Premium members.');
+  String get premiumBenefitsTitle    => t('Beneficios Premium:', 'Premium benefits:');
+  String get premiumAllVideos        => t('• Acceso a todos los videos', '• Access to all videos');
+  String get premiumDownloads        => t('• Descargas sin límite', '• Unlimited downloads');
+  String get premiumNoAds            => t('• Sin anuncios', '• No ads');
+  String get premiumExclusiveContent => t('• Contenido exclusivo', '• Exclusive content');
+  String get getPremium              => t('Hacerse Premium', 'Get Premium');
+  String get searchTutorials         => t('Buscar Tutoriales', 'Search Tutorials');
+  String get searchHint              => t('Escribe para buscar...', 'Type to search...');
+  String get search                  => t('Buscar', 'Search');
+  String get applyFilter             => t('Aplicar', 'Apply');
+  String get difficultyFilter        => t('Dificultad', 'Difficulty');
+  String get durationFilter          => t('Duración', 'Duration');
+  String get difficultyEasy          => t('Fácil', 'Easy');
+  String get difficultyMediumLevel   => t('Media', 'Medium');
+  String get difficultyHighLevel     => t('Alta', 'High');
+  String get difficultyAdvancedLevel => t('Avanzado', 'Advanced');
+  String playingLabel(String title)  => t('Reproduciendo: $title', 'Playing: $title');
+
+  String videoTutorialCategory(String key) {
+    switch (key) {
+      case 'all':        return t('Todos', 'All');
+      case 'beginners':  return t('Principiantes', 'Beginners');
+      case 'technique':  return t('Técnica', 'Technique');
+      case 'routines':   return t('Rutinas', 'Routines');
+      case 'nutrition':  return t('Nutrición', 'Nutrition');
+      case 'recovery':   return t('Recuperación', 'Recovery');
+      case 'cardio':     return t('Cardio', 'Cardio');
+      default:           return key;
+    }
+  }
+
+  String get maxLevelReached => t('¡Nivel máximo alcanzado! 👑', 'Max level reached! 👑');
+
+  // ── Profile Setup (wizard) ────────────────────────────────────────────────
+  String get setupContinue       => t('Continuar', 'Continue');
+  String get setupStepOf         => t('de', 'of');
+  String get setupSaveProfile    => t('Guardar mi perfil', 'Save my profile');
+  String get setupFieldRequired  => t('Selecciona una opción para continuar', 'Please select an option to continue');
+
+  // Step 1 — Age
+  String get setupAgeTitle       => t('¿Cuántos años\ntienes?', 'How old\nare you?');
+  String get setupAgeSubtitle    => t('Adaptamos cada rutina a tu etapa de vida para maximizar tus resultados.', 'We tailor each routine to your life stage to maximize your results.');
+  String get setupAge1835        => t('18 – 35 años', '18 – 35 years');
+  String get setupAge1835Desc    => t('Joven y llena de energía', 'Young and full of energy');
+  String get setupAge3655        => t('36 – 55 años', '36 – 55 years');
+  String get setupAge3655Desc    => t('En plena madurez y fortaleza', 'In full maturity and strength');
+  String get setupAge55plus      => t('55+ años', '55+ years');
+  String get setupAge55plusDesc  => t('Activa y sin límites', 'Active and limitless');
+
+  // Step 2 — Fitness level
+  String get setupLevelTitle         => t('¿Cuál es tu\nnivel de fitness?', 'What is your\nfitness level?');
+  String get setupLevelSubtitle      => t('Sé honesta contigo misma. Siempre puedes actualizarlo más adelante.', 'Be honest with yourself. You can always update it later.');
+  String get setupLevelBeginner      => t('Principiante', 'Beginner');
+  String get setupLevelBeginnerDesc  => t('Estoy empezando o llevo poco tiempo entrenando', 'I\'m just starting out or have been training for a short time');
+  String get setupLevelIntermediate      => t('Intermedio', 'Intermediate');
+  String get setupLevelIntermediateDesc  => t('Entreno con regularidad hace meses', 'I\'ve been training regularly for months');
+  String get setupLevelAdvanced      => t('Avanzada', 'Advanced');
+  String get setupLevelAdvancedDesc  => t('Entreno intensamente de forma constante', 'I train intensely on a consistent basis');
+
+  // Step 3 — Constitution
+  String get setupBodyTitle        => t('¿Cómo describirías\ntu cuerpo hoy?', 'How would you\ndescribe your body today?');
+  String get setupBodySubtitle     => t('Esta información es completamente privada y nos ayuda a elegir los mejores ejercicios para ti.', 'This information is completely private and helps us choose the best exercises for you.');
+  String get setupBodyUnderweight  => t('Bajo peso', 'Underweight');
+  String get setupBodyUnderDesc    => t('IMC por debajo de lo recomendado', 'BMI below the recommended range');
+  String get setupBodyHealthy      => t('Peso saludable', 'Healthy weight');
+  String get setupBodyHealthyDesc  => t('IMC dentro del rango recomendado', 'BMI within the recommended range');
+  String get setupBodyOverweight   => t('Sobrepeso', 'Overweight');
+  String get setupBodyOverDesc     => t('Algo por encima del rango recomendado', 'Slightly above the recommended range');
+  String get setupBodyObese        => t('Obesidad', 'Obesity');
+  String get setupBodyObeseDesc    => t('Busco perder peso con un plan seguro', 'I want to lose weight with a safe plan');
+
+  // Step 4 — Health
+  String get setupHealthTitle       => t('¿Tienes alguna\ncondición de salud?', 'Do you have any\nhealth conditions?');
+  String get setupHealthSubtitle    => t('Adaptamos los ejercicios para que entrenes de forma segura y efectiva.', 'We adapt exercises so you can train safely and effectively.');
+  String get setupKneeSensitive     => t('Rodillas sensibles', 'Sensitive knees');
+  String get setupKneeSensitiveDesc => t('Evitaremos ejercicios con impacto en las rodillas', 'We\'ll avoid high-impact knee exercises');
+  String get setupHealthCondition   => t('Condición de salud', 'Health condition');
+  String get setupHealthNone        => t('Sin condiciones', 'No conditions');
+  String get setupHealthCardiac     => t('Cardíaca', 'Cardiac');
+  String get setupHealthRespiratory => t('Respiratoria', 'Respiratory');
+  String get setupHealthMetabolic   => t('Metabólica', 'Metabolic');
+  String get setupHealthOther       => t('Otra', 'Other');
+
+  // Step 5 — Time
+  String get setupTimeTitle      => t('¿Cuánto tiempo\ntienes al día?', 'How much time\ndo you have each day?');
+  String get setupTimeSubtitle   => t('Diseñamos cada sesión para que aproveches al máximo cada minuto.', 'We design each session so you make the most of every minute.');
+  String get setupTime10         => t('10 minutos', '10 minutes');
+  String get setupTime10Desc     => t('Express — para días muy ocupados', 'Express — for very busy days');
+  String get setupTime15         => t('15 minutos', '15 minutes');
+  String get setupTime15Desc     => t('Equilibrado — el favorito de nuestras usuarias', 'Balanced — our users\' favorite');
+  String get setupTime20         => t('20 minutos', '20 minutes');
+  String get setupTime20Desc     => t('Completo — para maximizar resultados', 'Full — to maximize results');
+  String get setupAlmostDone     => t('¡Ya casi terminamos!', 'Almost done!');
+  String get setupAlmostDoneDesc => t('Tu plan personalizado está listo para ser creado.', 'Your personalized plan is ready to be created.');
+
+  String videoDifficulty(String key) {
+    switch (key) {
+      case 'easy':     return t('Fácil', 'Easy');
+      case 'medium':   return t('Media', 'Medium');
+      case 'high':     return t('Alta', 'High');
+      case 'advanced': return t('Avanzado', 'Advanced');
+      default:         return key;
     }
   }
 }
