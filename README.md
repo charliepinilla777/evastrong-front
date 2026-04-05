@@ -4,7 +4,7 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-blue.svg)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-blue.svg)](https://dart.dev)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 [![3D Effects](https://img.shields.io/badge/3D_Effects-Professional-pink.svg)]()
 [![Admin Dashboard](https://img.shields.io/badge/Admin_Dashboard-Real_Time-orange.svg)]()
 
@@ -165,15 +165,6 @@ MERCADO_PAGO_PUBLIC_KEY=your_public_key
 flutter run -d web-server --web-port=8080
 ```
 
-### Admin Dashboard Access
-
-1. **Open the app in your browser**
-2. **Navigate to Menu (☰) → Admin Login**
-3. **Use credentials:**
-   - Email: `admin@evastrong.com`
-   - Password: `admin123456`
-4. **Access real-time dashboard** with backend data
-
 ### Building for Production
 
 **Android:**
@@ -293,32 +284,11 @@ flutter test test/services/admin_service_test.dart
 
 ---
 
-## Contributing
-
-We welcome contributions! Please:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Make your changes
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## Issue Reporting
-
-Found a bug? Please use the [GitHub Issues](https://github.com/charliepinilla777/evastrong-front/issues) tracker:
-- Detailed description
-- Steps to reproduce
-- Expected vs actual behavior
-- Screenshots if applicable
-- Device and Flutter version
-
----
-
 ## License
 
-This project is licensed under the MIT License.
+© 2024-2025 Carlos Andres Pinilla. Todos los derechos reservados.
+
+Este software es propiedad exclusiva de Carlos Andres Pinilla. Queda estrictamente prohibido copiar, modificar, distribuir o usar este código sin autorización escrita previa del propietario. Ver archivo [LICENSE](LICENSE) para más detalles.
 
 ---
 
@@ -371,11 +341,9 @@ Frontend connects to: [evastrong-backend](https://github.com/charliepinilla777/e
 
 <div align="center">
 
-**Made with and 3D Effects by [Carlos Andres Pinilla](https://github.com/charliepinilla777)**
+**Desarrollado por [Carlos Andres Pinilla](https://github.com/charliepinilla777)**
 
-If you find this helpful, please give it a star!
-
-**Professional UI** | **Real-time Analytics** | **Secure Authentication**
+**© 2024-2025 Todos los derechos reservados**
 
 </div>
 
