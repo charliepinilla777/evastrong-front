@@ -542,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          'Evastrong es la app de acondicionamiento físico creada para mujeres reales, de todas las edades y de cualquier estado físico, que quieren resultados de verdad sin complicarse la vida.',
+                          AppStrings.of(context).aboutAppTagline,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.cormorantGaramond(
                             fontSize: 16,
@@ -554,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 18),
                         Text(
-                          'En Evastrong encuentras un plan alimenticio completo y fácil de seguir, con recetas pensadas para verte y sentirte mejor por dentro y por fuera. Cada menú está diseñado para acompañar tus objetivos: bajar grasa, tonificar, ganar energía y cuidar tu salud a largo plazo.',
+                          AppStrings.of(context).aboutAppNutrition,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.raleway(
                             fontSize: 13,
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 14),
                         Text(
-                          'Nuestras rutinas están diseñadas por expertos en entrenamiento femenino, adaptadas para principiantes, intermedias y avanzadas, para que puedas entrenar segura desde casa y avanzar a tu ritmo. Combina sesiones cortas y efectivas que encajan en tu día, con programas estructurados que te llevan paso a paso a un cuerpo más firme, más fuerte y más definido en poco tiempo.',
+                          AppStrings.of(context).aboutAppRoutines,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.raleway(
                             fontSize: 13,
@@ -578,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         const SizedBox(height: 14),
                         Text(
-                          'Con Evastrong no solo sigues ejercicios: construyes un estilo de vida saludable, con guía clara, motivación constante y herramientas pensadas para ayudarte a cumplir lo que te prometes frente al espejo.',
+                          AppStrings.of(context).aboutAppLifestyle,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.playfairDisplay(
                             fontSize: 13,
@@ -658,9 +658,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     children: [
                       const Icon(Icons.star, color: Colors.white, size: 30),
                       const SizedBox(height: 10),
-                      const Text(
-                        '¡SUSCRÍBETE YA!',
-                        style: TextStyle(
+                      Text(
+                        AppStrings.of(context).subscribeTitle,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -668,9 +668,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 5),
-                      const Text(
-                        'Cambia tu vida hoy',
-                        style: TextStyle(
+                      Text(
+                        AppStrings.of(context).subscribeSubtitle,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontStyle: FontStyle.italic,
@@ -694,7 +694,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 children: [
                   Expanded(
                     child: _buildActionCard(
-                      'Entrenar',
+                      'train',
                       Icons.fitness_center,
                       EvaColors.vibrantPink,
                       EvaColors.wellnessPurple,
@@ -703,7 +703,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   const SizedBox(width: 16),
                   Expanded(
                     child: _buildActionCard(
-                      'Logros',
+                      'achievements',
                       Icons.emoji_events,
                       EvaColors.cosmicRed,
                       EvaColors.vibrantPink,
@@ -721,7 +721,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildActionCard(String title, IconData icon, Color colorFrom, Color colorTo) {
+  Widget _buildActionCard(String key, IconData icon, Color colorFrom, Color colorTo) {
+    final s = AppStrings.of(context);
+    final title = key == 'train' ? s.actionTrain : s.actionAchievements;
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
@@ -755,9 +757,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             child: InkWell(
               borderRadius: BorderRadius.circular(20),
               onTap: () {
-                if (title == 'Entrenar') {
+                if (key == 'train') {
                   _tabController.animateTo(1);
-                } else if (title == 'Logros') {
+                } else if (key == 'achievements') {
                   Navigator.pushNamed(context, '/achievements');
                 }
               },
@@ -1245,28 +1247,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   // Datos de ejemplo — reemplazar con URLs reales cuando estén disponibles
-  final List<Map<String, String>> _galleryPhotos = [
-    {'url': 'assets/images/carousel/slide_1.jpg', 'caption': 'Entrenamiento de fuerza'},
-    {'url': 'assets/images/carousel/slide_2.jpg', 'caption': 'Cardio intenso'},
-    {'url': 'assets/images/carousel/slide_3.jpg', 'caption': 'Yoga y flexibilidad'},
-    {'url': 'assets/images/carousel/slide_4.jpg', 'caption': 'Tonificación total'},
-    {'url': 'assets/images/carousel/slide_5.jpg', 'caption': 'Resultados reales'},
-  ];
+  List<Map<String, String>> get _galleryPhotos {
+    final s = AppStrings.of(context);
+    return [
+      {'url': 'assets/images/carousel/slide_1.jpg', 'caption': s.photoStrengthCaption},
+      {'url': 'assets/images/carousel/slide_2.jpg', 'caption': s.photoCardioCaption},
+      {'url': 'assets/images/carousel/slide_3.jpg', 'caption': s.photoYogaCaption},
+      {'url': 'assets/images/carousel/slide_4.jpg', 'caption': s.photoToningCaption},
+      {'url': 'assets/images/carousel/slide_5.jpg', 'caption': s.photoResultsCaption},
+    ];
+  }
 
-  final List<Map<String, String>> _galleryVideos = [
-    {
-      'url': '',
-      'thumbnail': 'assets/images/carousel/slide_1.jpg',
-      'title': 'Rutina Glúteos',
-      'subtitle': '15 min • Principiante',
-    },
-    {
-      'url': '',
-      'thumbnail': 'assets/images/carousel/slide_3.jpg',
-      'title': 'Cardio Express',
-      'subtitle': '20 min • Intermedio',
-    },
-  ];
+  List<Map<String, String>> get _galleryVideos {
+    final s = AppStrings.of(context);
+    return [
+      {
+        'url': '',
+        'thumbnail': 'assets/images/carousel/slide_1.jpg',
+        'title': s.videoGlutesTitle,
+        'subtitle': s.videoGlutesSubtitle,
+      },
+      {
+        'url': '',
+        'thumbnail': 'assets/images/carousel/slide_3.jpg',
+        'title': s.videoCardioTitle,
+        'subtitle': s.videoCardioSubtitle,
+      },
+    ];
+  }
 
   void _openImageGallery(BuildContext ctx, List<String> urls, int initialIndex) {
     Navigator.push(ctx, MaterialPageRoute(
@@ -1294,9 +1302,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Fotos & Videos',
-              style: TextStyle(
+            Text(
+              AppStrings.of(context).mediaTitle,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -1310,7 +1318,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 }
               },
               child: Text(
-                'Ver todo',
+                AppStrings.of(context).mediaViewAll,
                 style: TextStyle(
                   fontSize: 13,
                   color: EvaColors.vibrantPink,
@@ -1404,9 +1412,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
             const SizedBox(width: 10),
-            const Text(
-              'Videos Destacados',
-              style: TextStyle(
+            Text(
+              AppStrings.of(context).mediaFeaturedVideos,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -1554,7 +1562,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       left: 16,
                       right: 16,
                       child: Text(
-                        slide['text']!,
+                        slideText,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -1904,7 +1912,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Column(
           children: [
             Text(
-              'Elige tu Plan',
+              AppStrings.of(context).plansTitle,
               style: GoogleFonts.cormorantGaramond(
                 fontSize: 34,
                 fontWeight: FontWeight.w700,
@@ -1914,7 +1922,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 6),
             Text(
-              'Comienza hoy tu transformación',
+              AppStrings.of(context).plansSubtitle,
               style: GoogleFonts.raleway(
                 fontSize: 14,
                 color: Colors.white70,
@@ -1934,71 +1942,60 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         const SizedBox(height: 28),
         // ── Tarjetas ──
-        _buildPlanCard('Básico', '9.99', false),
+        _buildPlanCard('basic', '9.99', false),
         const SizedBox(height: 20),
-        _buildPlanCard('Premium', '19.99', true),
+        _buildPlanCard('premium', '19.99', true),
         const SizedBox(height: 20),
-        _buildPlanCard('Elite', '29.99', false),
+        _buildPlanCard('elite', '29.99', false),
       ],
     );
   }
 
   // ── Datos de cada plan ──────────────────────────────────────────────────
-  static const _planConfig = {
-    'Básico': {
-      'emoji': '🌸',
-      'tagline': 'Empieza a Brillar',
-      'description': 'Para mujeres que quieren comenzar sin sentirse abrumadas.',
-      'quote': '"Tu nuevo comienzo: pocos minutos al día,\nmucha más seguridad frente al espejo."',
-      'hook': 'Ideal si quieres crear hábito y empezar a\namar el ejercicio sin presión.',
-      'features': [
-        'Rutinas esenciales: adelgazar, tonificar y combatir flacidez',
-        'Videos guiados paso a paso para entrenar en casa',
-        'Recetas saludables: desayunos y snacks fáciles',
-        'Mini tips de nutrición y hábitos diarios',
-        'Seguimiento básico de progreso y calorías',
-      ],
-    },
-    'Premium': {
-      'emoji': '💎',
-      'tagline': 'Transformación Total',
-      'description': 'Para mujeres decididas a cambiar su cuerpo y su estilo de vida.',
-      'quote': '"Del \'algún día\' al \'lo estoy logrando\':\ntu cuerpo cambia cuando tu rutina también lo hace."',
-      'hook': 'Resultados visibles en pocas semanas\ncon una guía clara y femenina.',
-      'features': [
-        'Todo lo del Plan Básico, más:',
-        'Glúteos, piernas, abdomen, espalda, full body y más niveles',
-        'Programas de 4, 8 y 12 semanas por objetivo concreto',
-        'Recetario ampliado: desayunos, almuerzos y cenas fitness',
-        'Guías de dieta semanales con macros por objetivo',
-        'Comunidad grupal de mujeres para motivarte cada día',
-      ],
-    },
-    'Elite': {
-      'emoji': '👑',
-      'tagline': 'Cuerpo de Sueño, Sin Excusas',
-      'description': 'Para la mujer que quiere acceso total y acelerar resultados.',
-      'quote': '"Tu cuerpo, tu proyecto más importante:\naquí tienes al equipo completo trabajando contigo."',
-      'hook': 'Acceso total, resultados máximos,\nacompañamiento real.',
-      'features': [
-        'Todo lo del Plan Premium, más:',
-        'Acceso ilimitado: todas las rutinas y programas especiales',
-        'Biblioteca completa de recetas premium (piel, glúteos, energía)',
-        'Asesoría nutricional personalizada según tu progreso',
-        'Plan mensual entrenamiento + dieta hecho a tu medida',
-        'Prioridad en soporte y acceso anticipado a nuevos retos',
-      ],
-    },
-  };
+  Map<String, Map<String, dynamic>> get _planConfig {
+    final s = AppStrings.of(context);
+    return {
+      'basic': {
+        'name':        s.planBasicName,
+        'emoji':       '🌸',
+        'tagline':     s.planBasicTagline,
+        'description': s.planBasicDescription,
+        'quote':       s.planBasicQuote,
+        'hook':        s.planBasicHook,
+        'features':    s.planBasicFeatures,
+      },
+      'premium': {
+        'name':        s.planPremiumName,
+        'emoji':       '💎',
+        'tagline':     s.planPremiumTagline,
+        'description': s.planPremiumDescription,
+        'quote':       s.planPremiumQuote,
+        'hook':        s.planPremiumHook,
+        'features':    s.planPremiumFeatures,
+      },
+      'elite': {
+        'name':        s.planEliteName,
+        'emoji':       '👑',
+        'tagline':     s.planEliteTagline,
+        'description': s.planEliteDescription,
+        'quote':       s.planEliteQuote,
+        'hook':        s.planEliteHook,
+        'features':    s.planEliteFeatures,
+      },
+    };
+  }
 
-  Widget _buildPlanCard(String title, String price, bool isPopular) {
-    final config = _planConfig[title]!;
+  Widget _buildPlanCard(String key, String price, bool isPopular) {
+    final s       = AppStrings.of(context);
+    final config   = _planConfig[key]!;
+    final name     = config['name']        as String;
     final emoji    = config['emoji']       as String;
     final tagline  = config['tagline']     as String;
     final desc     = config['description'] as String;
     final quote    = config['quote']       as String;
     final hook     = config['hook']        as String;
     final features = config['features']   as List<String>;
+    final title    = key;
 
     // Colores por plan
     final Color accent = title == 'Elite'
@@ -2085,7 +2082,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ],
                           ),
                           child: Text(
-                            '⭐ MÁS POPULAR',
+                            s.planMostPopular,
                             style: GoogleFonts.raleway(
                               color: Colors.white,
                               fontSize: 10,
@@ -2100,7 +2097,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
                   // ── Nombre del plan ──
                   Text(
-                    'Plan $title',
+                    'Plan $name',
                     style: GoogleFonts.cormorantGaramond(
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
@@ -2172,7 +2169,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 6),
                         child: Text(
-                          'USD / mes',
+                          s.planUsdPerMonth,
                           style: GoogleFonts.raleway(
                             fontSize: 13,
                             color: Colors.white60,
@@ -2216,7 +2213,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         shadowColor: accent.withOpacity(0.5),
                       ),
                       child: Text(
-                        isPopular ? '¡Quiero Transformarme!' : 'Empezar Ahora',
+                        isPopular ? s.planButtonPopular : s.planButtonDefault,
                         style: GoogleFonts.raleway(
                           fontWeight: FontWeight.w800,
                           fontSize: 15,

@@ -329,8 +329,32 @@ class AppStrings {
   String get viewDemo => t('Ver demostración', 'View demonstration');
 
   // ── Wearables ─────────────────────────────────────────────────────────────
-  String get editGoalsTitle      => t('Editar Metas', 'Edit Goals');
-  String get editGoalsComingSoon => t('Función de edición de metas próximamente...', 'Goal editing feature coming soon...');
+  String get wearablesTitle         => t('Wearables', 'Wearables');
+  String get wearableConnected      => t('Conectado', 'Connected');
+  String get wearableNotConnected   => t('No Conectado', 'Not Connected');
+  String get wearableConnect        => t('Conectar', 'Connect');
+  String get wearableCurrentData    => t('Datos Actuales', 'Current Data');
+  String get wearableSteps          => t('Pasos', 'Steps');
+  String get wearableHeartRate      => t('FC', 'HR');
+  String get wearableActiveMinutes  => t('Min. Activos', 'Active Min.');
+  String get wearableDistance       => t('Distancia', 'Distance');
+  String get wearableSleep          => t('Sueño', 'Sleep');
+  String get wearableWeight         => t('Peso', 'Weight');
+  String get wearableBMI            => t('IMC', 'BMI');
+  String wearableBMICategory(String cat) => t('Categoría IMC: $cat', 'BMI Category: $cat');
+  String get wearableDailyGoals     => t('Metas Diarias', 'Daily Goals');
+  String get editGoalsTitle         => t('Editar Metas', 'Edit Goals');
+  String get editGoalsComingSoon    => t('Función de edición de metas próximamente...', 'Goal editing feature coming soon...');
+  String get wearableAvailableDevices => t('Dispositivos Disponibles', 'Available Devices');
+  String get wearableScan           => t('Escanear', 'Scan');
+  String get wearableNoDevices      => t('No se encontraron dispositivos', 'No devices found');
+  String wearableBattery(int level, String status) => t('Batería: $level% ($status)', 'Battery: $level% ($status)');
+  String get wearableSupportedMetrics => t('Métricas Soportadas', 'Supported Metrics');
+  String get wearableConnectedOk    => t('Dispositivo conectado exitosamente', 'Device connected successfully');
+  String get wearableConnectError   => t('Error al conectar dispositivo', 'Error connecting device');
+  String get wearableDisconnected   => t('Dispositivo desconectado', 'Device disconnected');
+  String get wearableDataSynced     => t('Datos sincronizados', 'Data synced');
+  String wearableConnectingTo(String name) => t('Conectando a $name...', 'Connecting to $name...');
 
   // ── Contacto — redes sociales ─────────────────────────────────────────────
   String get instagramSubtitle => t('@evastrong · Síguenos',           '@evastrong · Follow us');
@@ -338,6 +362,24 @@ class AppStrings {
   String get pinterestSubtitle => t('@evastrong · Inspírate',          '@evastrong · Get inspired');
   String get emailSubtitle     => t('soporte@evastrong.app · Escríbenos', 'soporte@evastrong.app · Write to us');
   String get emailLabel        => t('Correo', 'Email');
+
+  // ── Descripción home ──────────────────────────────────────────────────────
+  String get aboutAppTagline => t(
+    'Evastrong es la app de acondicionamiento físico creada para mujeres reales, de todas las edades y de cualquier estado físico, que quieren resultados de verdad sin complicarse la vida.',
+    'EvaStrong is the fitness app created for real women of all ages and fitness levels who want real results without overcomplicating their lives.',
+  );
+  String get aboutAppNutrition => t(
+    'En Evastrong encuentras un plan alimenticio completo y fácil de seguir, con recetas pensadas para verte y sentirte mejor por dentro y por fuera. Cada menú está diseñado para acompañar tus objetivos: bajar grasa, tonificar, ganar energía y cuidar tu salud a largo plazo.',
+    'In EvaStrong you\'ll find a complete and easy-to-follow nutrition plan, with recipes designed to help you look and feel your best inside and out. Every menu is tailored to your goals: burn fat, tone up, boost energy, and take care of your long-term health.',
+  );
+  String get aboutAppRoutines => t(
+    'Nuestras rutinas están diseñadas por expertos en entrenamiento femenino, adaptadas para principiantes, intermedias y avanzadas, para que puedas entrenar segura desde casa y avanzar a tu ritmo. Combina sesiones cortas y efectivas que encajan en tu día, con programas estructurados que te llevan paso a paso a un cuerpo más firme, más fuerte y más definido en poco tiempo.',
+    'Our routines are designed by female training experts, adapted for beginners, intermediate, and advanced levels, so you can train safely from home and progress at your own pace. Combine short, effective sessions that fit your day with structured programs that take you step by step to a firmer, stronger, and more defined body.',
+  );
+  String get aboutAppLifestyle => t(
+    'Con Evastrong no solo sigues ejercicios: construyes un estilo de vida saludable, con guía clara, motivación constante y herramientas pensadas para ayudarte a cumplir lo que te prometes frente al espejo.',
+    'With EvaStrong you\'re not just following exercises: you\'re building a healthy lifestyle, with clear guidance, constant motivation, and tools designed to help you keep the promises you make to yourself.',
+  );
 
   // ── Carrusel home ─────────────────────────────────────────────────────────
   List<String> get carouselTexts => _en
@@ -373,6 +415,108 @@ class AppStrings {
           '🏆 Los campeones se hacen cuando nadie está mirando',
         ];
 
+  // ── Acciones rápidas (home) ───────────────────────────────────────────────
+  String get actionTrain          => t('Entrenar', 'Train');
+  String get actionAchievements   => t('Logros', 'Achievements');
+
+  // ── Galería / Media ───────────────────────────────────────────────────────
+  String get mediaTitle           => t('Fotos & Videos', 'Photos & Videos');
+  String get mediaViewAll         => t('Ver todo', 'View all');
+  String get mediaFeaturedVideos  => t('Videos Destacados', 'Featured Videos');
+  String get subscribeTitle       => t('¡SUSCRÍBETE YA!', 'SUBSCRIBE NOW!');
+  String get subscribeSubtitle    => t('Cambia tu vida hoy', 'Change your life today');
+
+  // Fotos de galería — captions
+  String get photoStrengthCaption    => t('Entrenamiento de fuerza', 'Strength training');
+  String get photoCardioCaption      => t('Cardio intenso', 'Intense cardio');
+  String get photoYogaCaption        => t('Yoga y flexibilidad', 'Yoga & flexibility');
+  String get photoToningCaption      => t('Tonificación total', 'Full body toning');
+  String get photoResultsCaption     => t('Resultados reales', 'Real results');
+
+  // Videos de galería — títulos y subtítulos
+  String get videoGlutesTitle        => t('Rutina Glúteos', 'Glutes Routine');
+  String get videoGlutesSubtitle     => t('15 min • Principiante', '15 min • Beginner');
+  String get videoCardioTitle        => t('Cardio Express', 'Express Cardio');
+  String get videoCardioSubtitle     => t('20 min • Intermedio', '20 min • Intermediate');
+
+  // ── Planes de suscripción ─────────────────────────────────────────────────
+  String get plansTitle         => t('Elige tu Plan', 'Choose Your Plan');
+  String get plansSubtitle      => t('Comienza hoy tu transformación', 'Start your transformation today');
+  String get planMostPopular    => t('⭐ MÁS POPULAR', '⭐ MOST POPULAR');
+  String get planUsdPerMonth    => t('USD / mes', 'USD / mo');
+  String get planButtonPopular  => t('¡Quiero Transformarme!', 'I Want to Transform!');
+  String get planButtonDefault  => t('Empezar Ahora', 'Start Now');
+
+  // Plan Básico / Basic
+  String get planBasicName        => t('Básico', 'Basic');
+  String get planBasicTagline     => t('Empieza a Brillar', 'Start Shining');
+  String get planBasicDescription => t('Para mujeres que quieren comenzar sin sentirse abrumadas.', 'For women who want to start without feeling overwhelmed.');
+  String get planBasicQuote       => t('"Tu nuevo comienzo: pocos minutos al día,\nmucha más seguridad frente al espejo."', '"Your new beginning: just a few minutes a day,\nso much more confidence in the mirror."');
+  String get planBasicHook        => t('Ideal si quieres crear hábito y empezar a\namar el ejercicio sin presión.', 'Perfect if you want to build a habit and start\nloving exercise without pressure.');
+  List<String> get planBasicFeatures => _en
+      ? const [
+          'Essential routines: slim down, tone up, and fight sagging',
+          'Step-by-step guided videos to train at home',
+          'Healthy recipes: easy breakfasts and snacks',
+          'Mini nutrition tips and daily habits',
+          'Basic progress and calorie tracking',
+        ]
+      : const [
+          'Rutinas esenciales: adelgazar, tonificar y combatir flacidez',
+          'Videos guiados paso a paso para entrenar en casa',
+          'Recetas saludables: desayunos y snacks fáciles',
+          'Mini tips de nutrición y hábitos diarios',
+          'Seguimiento básico de progreso y calorías',
+        ];
+
+  // Plan Premium
+  String get planPremiumName        => t('Premium', 'Premium');
+  String get planPremiumTagline     => t('Transformación Total', 'Total Transformation');
+  String get planPremiumDescription => t('Para mujeres decididas a cambiar su cuerpo y su estilo de vida.', 'For women committed to changing their body and lifestyle.');
+  String get planPremiumQuote       => t('"Del \'algún día\' al \'lo estoy logrando\':\ntu cuerpo cambia cuando tu rutina también lo hace."', '"From \'someday\' to \'I\'m doing it\':\nyour body changes when your routine does too."');
+  String get planPremiumHook        => t('Resultados visibles en pocas semanas\ncon una guía clara y femenina.', 'Visible results in just a few weeks\nwith clear, women-focused guidance.');
+  List<String> get planPremiumFeatures => _en
+      ? const [
+          'Everything in the Basic Plan, plus:',
+          'Glutes, legs, abs, back, full body, and more levels',
+          '4, 8, and 12-week programs by specific goal',
+          'Expanded recipe book: fitness breakfasts, lunches & dinners',
+          'Weekly diet guides with macros by goal',
+          'Women\'s group community to keep you motivated every day',
+        ]
+      : const [
+          'Todo lo del Plan Básico, más:',
+          'Glúteos, piernas, abdomen, espalda, full body y más niveles',
+          'Programas de 4, 8 y 12 semanas por objetivo concreto',
+          'Recetario ampliado: desayunos, almuerzos y cenas fitness',
+          'Guías de dieta semanales con macros por objetivo',
+          'Comunidad grupal de mujeres para motivarte cada día',
+        ];
+
+  // Plan Elite
+  String get planEliteName        => t('Elite', 'Elite');
+  String get planEliteTagline     => t('Cuerpo de Sueño, Sin Excusas', 'Dream Body, No Excuses');
+  String get planEliteDescription => t('Para la mujer que quiere acceso total y acelerar resultados.', 'For the woman who wants full access and faster results.');
+  String get planEliteQuote       => t('"Tu cuerpo, tu proyecto más importante:\naquí tienes al equipo completo trabajando contigo."', '"Your body, your most important project:\nhere you have the full team working with you."');
+  String get planEliteHook        => t('Acceso total, resultados máximos,\nacompañamiento real.', 'Full access, maximum results,\nreal support.');
+  List<String> get planEliteFeatures => _en
+      ? const [
+          'Everything in the Premium Plan, plus:',
+          'Unlimited access: all routines and special programs',
+          'Complete premium recipe library (skin, glutes, energy)',
+          'Personalized nutrition coaching based on your progress',
+          'Monthly custom training + diet plan made for you',
+          'Priority support and early access to new challenges',
+        ]
+      : const [
+          'Todo lo del Plan Premium, más:',
+          'Acceso ilimitado: todas las rutinas y programas especiales',
+          'Biblioteca completa de recetas premium (piel, glúteos, energía)',
+          'Asesoría nutricional personalizada según tu progreso',
+          'Plan mensual entrenamiento + dieta hecho a tu medida',
+          'Prioridad en soporte y acceso anticipado a nuevos retos',
+        ];
+
   // ── Dietas & Recetas ─────────────────────────────────────────────────────
   String get dietTitle      => t('Dietas & Recetas', 'Diets & Recipes');
   String get dietSubtitle   => t('Recetas saludables diseñadas para tu objetivo', 'Healthy recipes designed for your goals');
@@ -399,7 +543,17 @@ class AppStrings {
   String get prepTime    => t('Prep', 'Prep');
   String get cookTime    => t('Cocción', 'Cook');
   String get totalTime   => t('Total', 'Total');
-  String get dietErrorMsg => t('No se pudieron cargar las recetas. Verifica tu conexión.', 'Could not load recipes. Check your connection.');
+  String get dietErrorMsg  => t('No se pudieron cargar las recetas. Verifica tu conexión.', 'Could not load recipes. Check your connection.');
+  String get planErrorMsg  => t('No se pudieron cargar los planes.', 'Could not load plans.');
+  String get kCalTotal     => t('kcal totales', 'total kcal');
+  String get mealsLabel    => t('comidas', 'meals');
+  String get postWorkout   => t('post-entreno', 'post-workout');
+  String get yes           => t('Sí', 'Yes');
+  String get no            => t('No', 'No');
+  String get optionalLabel => t('opcional', 'optional');
+  String get lockedMeal    => t('Comida bloqueada', 'Locked meal');
+  String get mealLockedPremiumMsg => t('Esta comida está disponible en el plan Premium.', 'This meal is available on the Premium plan.');
+  String get mealLockedBasicMsg   => t('Esta comida está disponible en el plan Basic o Premium.', 'This meal is available on the Basic or Premium plan.');
 
   String dietCategory(String key) {
     switch (key) {
@@ -713,11 +867,6 @@ class AppStrings {
   String get contactTitle       => t('Contacto', 'Contact');
   String get followUsNetworks   => t('Síguenos en nuestras redes', 'Follow us on social media');
   String get followUsOn         => t('Síguenos en:', 'Follow us on:');
-  String get instagramSubtitle  => t('@evastrong · Síguenos', '@evastrong · Follow us');
-  String get facebookSubtitle   => t('EvaStrong · Síguenos', 'EvaStrong · Follow us');
-  String get pinterestSubtitle  => t('@evastrong · Inspírate', '@evastrong · Get inspired');
-  String get emailLabel         => t('Correo', 'Email');
-  String get emailSubtitle      => t('soporte@evastrong.app · Escríbenos', 'soporte@evastrong.app · Contact us');
   String get contactInfo        => t('Información de contacto', 'Contact information');
   String get ourLocation        => t('Nuestra ubicación', 'Our location');
   String get openGoogleMaps     => t('Abrir en Google Maps', 'Open in Google Maps');

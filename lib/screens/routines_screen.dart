@@ -2252,7 +2252,7 @@ class _RoutinesScreenState extends State<RoutinesScreen>
           );
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text(AppStrings.of(context).routineGeneratedSuccess),
             backgroundColor: EvaColors.activeGreen,
           ),

@@ -870,7 +870,7 @@ class _RecipeDetailSheet extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Info nutricional
-                    _buildNutritionRow(),
+                    _buildNutritionRow(context),
                     const SizedBox(height: 20),
 
                     // Descripción
@@ -1055,7 +1055,8 @@ class _RecipeDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildNutritionRow() {
+  Widget _buildNutritionRow(BuildContext context) {
+    final s = AppStrings.of(context);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -1071,10 +1072,10 @@ class _RecipeDetailSheet extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNutritionItem('${recipe.calories}', 'Calorías', '🔥'),
-          _buildNutritionItem('${recipe.protein.toStringAsFixed(0)}g', 'Proteína', '💪'),
-          _buildNutritionItem('${recipe.carbs.toStringAsFixed(0)}g', 'Carbos', '🌾'),
-          _buildNutritionItem('${recipe.fat.toStringAsFixed(0)}g', 'Grasa', '🥑'),
+          _buildNutritionItem('${recipe.calories}', s.calories, '🔥'),
+          _buildNutritionItem('${recipe.protein.toStringAsFixed(0)}g', s.protein, '💪'),
+          _buildNutritionItem('${recipe.carbs.toStringAsFixed(0)}g', s.carbs, '🌾'),
+          _buildNutritionItem('${recipe.fat.toStringAsFixed(0)}g', s.fat, '🥑'),
         ],
       ),
     );

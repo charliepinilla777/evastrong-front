@@ -648,7 +648,6 @@ class ExerciseInstructionsService {
     'Plancha lateral':              'Side Plank',
     'Extensión de espalda':         'Back Extension',
     'Perro boca abajo':             'Downward Dog',
-    'Guerrero I':                   'Warrior I',
     'Torsión supina':               'Supine Twist',
     'Piernas en la pared':          'Legs Up the Wall',
     'Savasana':                     'Savasana',
