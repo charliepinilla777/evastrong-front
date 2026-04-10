@@ -31,31 +31,37 @@ class ChatService {
     final token = await SecureStorageService.getToken();
     if (token == null) return;
 
-    _socket = IO.io(
-      AppConfig.socketUrl,
-      IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .setAuth({'token': token})
-          .enableAutoConnect()
-          .enableReconnection()
-          .setReconnectionAttempts(5)
-          .setReconnectionDelay(2000)
-          .build(),
-    );
+    try {
+      _socket = IO.io(
+        AppConfig.socketUrl,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setAuth({'token': token})
+            .enableAutoConnect()
+            .enableReconnection()
+            .setReconnectionAttempts(5)
+            .setReconnectionDelay(2000)
+            .build(),
+      );
+    } catch (e) {
+      debugPrint('ChatService: error inicializando socket $e');
+      _socket = null;
+      return;
+    }
 
-    _socket!.onConnect((_) {
+    _socket?.onConnect((_) {
       debugPrint('ChatService: conectado al socket');
     });
 
-    _socket!.onDisconnect((_) {
+    _socket?.onDisconnect((_) {
       debugPrint('ChatService: desconectado del socket');
     });
 
-    _socket!.onConnectError((err) {
+    _socket?.onConnectError((err) {
       debugPrint('ChatService: error de conexión $err');
     });
 
-    _socket!.on('new_message', (data) {
+    _socket?.on('new_message', (data) {
       try {
         final msg = ChatMessage.fromJson(data as Map<String, dynamic>);
         _messageController.add(msg);
@@ -64,15 +70,15 @@ class ChatService {
       }
     });
 
-    _socket!.on('user_typing', (data) {
+    _socket?.on('user_typing', (data) {
       _typingController.add(Map<String, dynamic>.from(data));
     });
 
-    _socket!.on('user_stop_typing', (data) {
+    _socket?.on('user_stop_typing', (data) {
       _stopTypingController.add(data['userId']?.toString() ?? '');
     });
 
-    _socket!.connect();
+    _socket?.connect();
   }
 
   void disconnect() {

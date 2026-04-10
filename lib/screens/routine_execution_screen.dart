@@ -778,7 +778,7 @@ class _RoutineExecutionScreenState extends State<RoutineExecutionScreen>
   Widget _buildMainContent() {
     final exercise = _currentExercise;
     if (exercise == null) {
-      return const Center(child: Text('No hay ejercicios disponibles'));
+      return Center(child: Text(AppStrings.of(context).noExercises));
     }
 
     final gifUrl = ExerciseGifService.getGifUrl(

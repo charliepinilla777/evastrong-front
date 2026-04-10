@@ -116,15 +116,14 @@ class AnalyticsService {
     if (_sessions.isEmpty) return;
 
     final currentSession = _sessions.last;
-    currentSession.endTime = DateTime.now();
-    currentSession.duration = currentSession.endTime!.difference(
-      currentSession.startTime,
-    );
+    final endTime = DateTime.now();
+    final duration = endTime.difference(currentSession.startTime);
+    currentSession.endTime = endTime;
+    currentSession.duration = duration;
 
     _updateUserData(
       totalSessions: _userData.totalSessions + 1,
-      totalSessionTime:
-          _userData.totalSessionTime + currentSession.duration!.inSeconds,
+      totalSessionTime: _userData.totalSessionTime + duration.inSeconds,
     );
 
     debugPrint(

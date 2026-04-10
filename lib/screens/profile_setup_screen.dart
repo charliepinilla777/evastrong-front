@@ -126,6 +126,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen>
   }
 
   Future<void> _saveProfile() async {
+    if (_ageRange == null || _constitution == null || _fitnessLevel == null || _pathologies == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppStrings.of(context).profileSaveError),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
     setState(() => _isSaving = true);
     try {
       int userAge = _ageRange == '18-35' ? 25 : _ageRange == '36-55' ? 45 : 60;

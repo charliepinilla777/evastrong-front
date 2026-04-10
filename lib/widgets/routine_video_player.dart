@@ -145,6 +145,12 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
     }
 
     // Player listo
+    if (_videoController == null || _chewieController == null) {
+      return _buildPlaceholder(
+        icon: Icons.error_outline,
+        message: 'No se pudo cargar el video.',
+      );
+    }
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: AspectRatio(
