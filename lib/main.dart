@@ -205,25 +205,87 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                Color(0xFF6A0050), // magentaDark
+                Color(0xFFD71E49), // cosmicRed
+                Color(0xFFFF4081), // mediumPink
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x66D71E49),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
           ),
-        ),
-        backgroundColor: EvaColors.vibrantPink,
-        elevation: 8,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            leading: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu_rounded, color: Colors.white),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
+            title: Text(
+              'EVA STRONG',
+              style: GoogleFonts.cormorantGaramond(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 3.5,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+            centerTitle: true,
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.35),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.bolt_rounded, color: Color(0xFFFFD700), size: 14),
+                      const SizedBox(width: 3),
+                      Text(
+                        'PRO',
+                        style: GoogleFonts.raleway(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       body: Column(
@@ -243,122 +305,282 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(gradient: EvaColors.primaryGradient),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.fitness_center, color: Colors.white, size: 40),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Eva Strong',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+        width: 300,
+        child: ClipRRect(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF6A0050), // magentaDark
+                  Color(0xFF3D0030),
+                  Color(0xFF1A0030), // negro púrpura
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ),
+            ),
+            child: Column(
+              children: [
+                // ── HEADER PREMIUM ────────────────────────────────────
+                Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(minHeight: 200),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF6A0050),
+                                Color(0xFFD71E49),
+                                Color(0xFFFF4081),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Círculo decorativo superior derecho
+                      Positioned(
+                        top: -30,
+                        right: -30,
+                        child: Container(
+                          width: 160,
+                          height: 160,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.06),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Círculo decorativo inferior izquierdo
+                      Positioned(
+                        bottom: -20,
+                        left: -20,
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                Colors.white.withOpacity(0.04),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Contenido
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: MediaQuery.of(context).padding.top + 28,
+                          left: 24,
+                          right: 24,
+                          bottom: 24,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'EVA STRONG',
+                              style: GoogleFonts.cormorantGaramond(
+                                color: Colors.white,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 6.0,
+                                height: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Línea dorada decorativa
+                            Container(
+                              width: 80,
+                              height: 2,
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFFFFD700),
+                                    Color(0xFFFFA500),
+                                    Colors.transparent,
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Tu transformación, tu poder',
+                              style: GoogleFonts.raleway(
+                                color: Colors.white.withOpacity(0.80),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 1.4,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── BODY DEL MENÚ ──────────────────────────────────────
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 12),
+
+                        // SECCIÓN: NAVEGAR
+                        _DrawerSectionLabel(label: 'NAVEGAR'),
+
+                        _DrawerNavItem(
+                          icon: Icons.home_rounded,
+                          iconColor: EvaColors.vibrantPink,
+                          label: AppStrings.of(context).home,
+                          onTap: () => Navigator.pop(context),
+                        ),
+
+                        // Rutinas — item destacado
+                        _DrawerNavItemHighlighted(
+                          icon: Icons.fitness_center_rounded,
+                          label: AppStrings.of(context).routines,
+                          subtitle: 'Tu entrenamiento de hoy',
+                          onTap: () {
+                            Navigator.pop(context);
+                            _tabController.animateTo(1);
+                          },
+                        ),
+
+                        _DrawerNavItem(
+                          icon: Icons.restaurant_menu_rounded,
+                          iconColor: EvaColors.vibrantPink,
+                          label: AppStrings.of(context).diets,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _tabController.animateTo(2);
+                          },
+                        ),
+
+                        _DrawerNavItem(
+                          icon: Icons.contact_phone_rounded,
+                          iconColor: EvaColors.vibrantPink,
+                          label: AppStrings.of(context).contact,
+                          onTap: () {
+                            Navigator.pop(context);
+                            _tabController.animateTo(3);
+                          },
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // SECCIÓN: MI CUENTA
+                        _DrawerSectionLabel(label: 'MI CUENTA'),
+
+                        _DrawerNavItem(
+                          icon: Icons.emoji_events_rounded,
+                          iconColor: EvaColors.vitalityYellow,
+                          label: AppStrings.of(context).achievements,
+                          subtitle: 'Ve tu progreso',
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/achievements');
+                          },
+                        ),
+
+                        _DrawerNavItem(
+                          icon: Icons.chat_rounded,
+                          iconColor: EvaColors.activeGreen,
+                          label: AppStrings.of(context).chat,
+                          subtitle: 'Comunidad activa',
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/chat');
+                          },
+                        ),
+
+                        _DrawerNavItem(
+                          icon: Icons.person_rounded,
+                          iconColor: EvaColors.vibrantPink,
+                          label: AppStrings.of(context).profile,
+                          subtitle: 'Personaliza tu plan',
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/user-profile');
+                          },
+                        ),
+
+                        _DrawerNavItem(
+                          icon: Icons.chat_bubble_outline_rounded,
+                          iconColor: EvaColors.wellnessPurple,
+                          label: AppStrings.of(context).feedback,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/feedback');
+                          },
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // SECCIÓN: SISTEMA
+                        _DrawerSectionLabel(label: 'SISTEMA'),
+
+                        _DrawerNavItem(
+                          icon: Icons.settings_rounded,
+                          iconColor: Colors.white54,
+                          label: AppStrings.of(context).settings,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/settings');
+                          },
+                        ),
+
+                        const SizedBox(height: 24),
+                      ],
                     ),
                   ),
-                  const Text(
-                    'Tu transformación empieza aquí',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                ),
+
+                // ── FOOTER ──────────────────────────────────────────────
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom + 16,
+                    top: 12,
                   ),
-                ],
-              ),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.white.withOpacity(0.08),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    'EVA STRONG  ©  2025',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.cormorantGaramond(
+                      color: Colors.white.withOpacity(0.28),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 3.0,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.home, color: EvaColors.vibrantPink),
-              title: Text(AppStrings.of(context).home),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.fitness_center,
-                color: EvaColors.vibrantPink,
-              ),
-              title: Text(AppStrings.of(context).routines),
-              onTap: () {
-                Navigator.pop(context);
-                _tabController.animateTo(1);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.restaurant_menu,
-                color: EvaColors.vibrantPink,
-              ),
-              title: Text(AppStrings.of(context).diets),
-              onTap: () {
-                Navigator.pop(context);
-                _tabController.animateTo(2);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.contact_phone,
-                color: EvaColors.vibrantPink,
-              ),
-              title: Text(AppStrings.of(context).contact),
-              onTap: () {
-                Navigator.pop(context);
-                _tabController.animateTo(3);
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.emoji_events,
-                color: EvaColors.vibrantPink,
-              ),
-              title: Text(AppStrings.of(context).achievements),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/achievements');
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.chat,
-                color: EvaColors.vibrantPink,
-              ),
-              title: Text(AppStrings.of(context).chat),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/chat');
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person, color: EvaColors.vibrantPink),
-              title: Text(AppStrings.of(context).profile),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/user-profile');
-              },
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.chat_bubble_outline_rounded,
-                color: EvaColors.vibrantPink,
-              ),
-              title: Text(AppStrings.of(context).feedback),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/feedback');
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings, color: EvaColors.vibrantPink),
-              title: Text(AppStrings.of(context).settings),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-          ],
+          ),
         ),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
@@ -426,25 +648,68 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
-        gradient: EvaColors.primaryGradient,
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF6A0050), // magentaDark
+            Color(0xFFD71E49), // cosmicRed
+            Color(0xFFFF4081), // mediumPink
+            Color(0xFF800080), // wellnessPurple
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: EvaColors.vibrantPink.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
+            color: const Color(0xFFD71E49).withOpacity(0.4),
+            blurRadius: 16,
+            offset: const Offset(0, -3),
           ),
         ],
       ),
       child: TabBar(
         controller: _tabController,
-        indicatorColor: EvaColors.textOnVibrant,
-        labelColor: EvaColors.textOnVibrant,
-        unselectedLabelColor: EvaColors.textOnVibrant.withOpacity(0.7),
+        indicatorColor: const Color(0xFFFFD700), // dorado para tab activo
+        indicatorWeight: 3.0,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.white.withOpacity(0.55),
+        labelStyle: GoogleFonts.raleway(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5),
+        unselectedLabelStyle: GoogleFonts.raleway(fontSize: 10, fontWeight: FontWeight.w400),
         tabs: [
-          Tab(icon: const Icon(Icons.home), text: AppStrings.of(context).tabHome),
-          Tab(icon: const Icon(Icons.fitness_center), text: AppStrings.of(context).tabRoutines),
-          Tab(icon: const Icon(Icons.restaurant_menu), text: AppStrings.of(context).tabDiets),
-          Tab(icon: const Icon(Icons.phone), text: AppStrings.of(context).tabContact),
+          Tab(icon: const Icon(Icons.home_rounded, size: 22), text: AppStrings.of(context).tabHome),
+          // Tab Rutinas — diferenciado con punto FOMO
+          Tab(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.fitness_center_rounded, size: 24, color: Colors.white),
+                    Positioned(
+                      right: -4,
+                      top: -2,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFFD700),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  AppStrings.of(context).tabRoutines,
+                  style: GoogleFonts.raleway(fontSize: 10, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          Tab(icon: const Icon(Icons.restaurant_menu_rounded, size: 22), text: AppStrings.of(context).tabDiets),
+          Tab(icon: const Icon(Icons.phone_rounded, size: 22), text: AppStrings.of(context).tabContact),
         ],
       ),
     );
@@ -455,45 +720,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (context, constraints) {
         return Stack(
           children: [
-            // Partículas de fondo en toda la pantalla
+            // Background animado — sin blanco, profundidad oscura premium
+            AnimateGradient(
+              primaryBeginGeometry: const AlignmentDirectional(-1, -1),
+              primaryEndGeometry: const AlignmentDirectional(1, 1),
+              secondaryBeginGeometry: const AlignmentDirectional(1, -0.5),
+              secondaryEndGeometry: const AlignmentDirectional(-1, 0.8),
+              textDirectionForGeometry: TextDirection.ltr,
+              duration: const Duration(seconds: 5),
+              primaryColors: const [
+                Color(0xFF6A0050), // magentaDark — ancla oscura
+                Color(0xFFD71E49), // cosmicRed — energía
+                Color(0xFFFF69B4), // vibrantPink — toque rosa
+              ],
+              secondaryColors: const [
+                Color(0xFF4A0060), // púrpura profundo
+                Color(0xFF800080), // wellnessPurple — premium
+                Color(0xFFB5294E), // rosa oscuro intermedio
+              ],
+              child: Container(),
+            ),
+            // Partículas atmosféricas — sutiles, sin competir con el contenido
             Positioned.fill(
               child: ParticlesFly(
                 height: constraints.maxHeight,
                 width: constraints.maxWidth,
                 connectDots: false,
-                numberOfParticles: 25,
-                speedOfParticles: 0.8,
-                lineColor: EvaColors.vibrantPink.withOpacity(0.2),
-                particleColor: Colors.white.withOpacity(0.7),
-                awayRadius: 180,
+                numberOfParticles: 35,
+                speedOfParticles: 0.5,
+                lineColor: EvaColors.vibrantPink.withOpacity(0.08),
+                particleColor: Colors.white.withOpacity(0.25),
+                awayRadius: 160,
                 onTapAnimation: true,
                 isRandSize: true,
-                isRandomColor: false,
+                isRandomColor: true,
                 randColorList: [
-                  EvaColors.vibrantPink.withOpacity(0.5),
-                  Colors.white.withOpacity(0.7),
-                  EvaColors.cosmicRed.withOpacity(0.4),
+                  const Color(0xFFFFD700).withOpacity(0.30),
+                  EvaColors.vibrantPink.withOpacity(0.20),
+                  Colors.white.withOpacity(0.18),
+                  const Color(0xFFE8B4FF).withOpacity(0.22),
+                  const Color(0xFFFFB3D9).withOpacity(0.18),
                 ],
               ),
-            ),
-            // Background animado con gradiente
-            AnimateGradient(
-              primaryBeginGeometry: const AlignmentDirectional(0, 1),
-              primaryEndGeometry: const AlignmentDirectional(0, 2),
-              secondaryBeginGeometry: const AlignmentDirectional(2, 0),
-              secondaryEndGeometry: const AlignmentDirectional(0, -0.8),
-              textDirectionForGeometry: TextDirection.rtl,
-              primaryColors: const [
-                Color(0xFFFF69B4),
-                Color(0xFFE91E63),
-                Color(0xFFFFFFFF),
-              ],
-              secondaryColors: const [
-                Color(0xFFFFFFFF),
-                Color(0xFF9C27B0),
-                Color(0xFF800080),
-              ],
-              child: Container(),
             ),
 
             // Contenido principal
@@ -629,53 +897,156 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
               const SizedBox(height: 24),
 
-              // Banner de suscripción
-              SizedBox(
-                width: double.infinity,
-                height: 140,
+              // Banner de suscripción — estructura AIDA
+              GestureDetector(
+                onTap: () => _tabController.animateTo(1),
                 child: Container(
+                  width: double.infinity,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        EvaColors.cosmicRed,
-                        EvaColors.vibrantPink,
-                        EvaColors.wellnessPurple,
+                        Color(0xFF6A0050), // magentaDark — premium
+                        Color(0xFFD71E49), // cosmicRed — urgencia
+                        Color(0xFF800080), // wellnessPurple — exclusivo
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: EvaColors.cosmicRed.withOpacity(0.4),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
+                        color: const Color(0xFFD71E49).withOpacity(0.5),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
                       ),
                     ],
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withOpacity(0.4),
+                      width: 1.5,
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Stack(
                     children: [
-                      const Icon(Icons.star, color: Colors.white, size: 30),
-                      const SizedBox(height: 10),
-                      Text(
-                        AppStrings.of(context).subscribeTitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                      // Círculo decorativo fondo
+                      Positioned(
+                        right: -10,
+                        top: -10,
+                        child: Opacity(
+                          opacity: 0.08,
+                          child: Container(
+                            width: 120,
+                            height: 120,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 5),
-                      Text(
-                        AppStrings.of(context).subscribeSubtitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontStyle: FontStyle.italic,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                        child: Row(
+                          children: [
+                            // Columna izquierda: texto + CTA
+                            Expanded(
+                              flex: 3,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Badge urgencia
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'OFERTA ESPECIAL',
+                                      style: GoogleFonts.raleway(
+                                        color: Colors.black,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    AppStrings.of(context).subscribeTitle,
+                                    style: GoogleFonts.cormorantGaramond(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    AppStrings.of(context).subscribeSubtitle,
+                                    style: GoogleFonts.raleway(
+                                      color: Colors.white.withOpacity(0.85),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // CTA button
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      'Ver Planes',
+                                      style: GoogleFonts.raleway(
+                                        color: const Color(0xFFD71E49),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Columna derecha: icono + social proof
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.workspace_premium_rounded,
+                                    color: Color(0xFFFFD700),
+                                    size: 42,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '+2,400',
+                                    style: GoogleFonts.raleway(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  Text(
+                                    'usuarias activas',
+                                    style: GoogleFonts.raleway(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w400,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
@@ -723,32 +1094,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildActionCard(String key, IconData icon, Color colorFrom, Color colorTo) {
     final s = AppStrings.of(context);
-    final title = key == 'train' ? s.actionTrain : s.actionAchievements;
+    final isTrainCard = key == 'train';
+    final title = isTrainCard ? s.actionTrain : s.actionAchievements;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
         child: Container(
-          height: 110,
+          height: 130,
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                colorFrom.withOpacity(0.75),
-                colorTo.withOpacity(0.55),
+                colorFrom.withOpacity(0.90),
+                colorTo.withOpacity(0.75),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.25),
-              width: 1.2,
+              color: Colors.white.withOpacity(0.35),
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: colorFrom.withOpacity(0.35),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
+                color: colorFrom.withOpacity(0.55),
+                blurRadius: 24,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -763,19 +1136,64 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Navigator.pushNamed(context, '/achievements');
                 }
               },
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Stack(
                 children: [
-                  Icon(icon, color: Colors.white, size: 32),
-                  const SizedBox(height: 8),
-                  Text(
-                    title,
-                    style: GoogleFonts.cormorantGaramond(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
+                  // Badge superior derecho
+                  Positioned(
+                    top: 10,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isTrainCard
+                            ? const Color(0xFFFFD700)
+                            : const Color(0xFF32CD32),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        isTrainCard ? 'HOY' : 'NUEVO',
+                        style: GoogleFonts.raleway(
+                          color: Colors.black,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                     ),
+                  ),
+                  // Contenido central
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(width: double.infinity),
+                      Icon(
+                        isTrainCard
+                            ? Icons.play_circle_filled_rounded
+                            : Icons.emoji_events_rounded,
+                        color: Colors.white,
+                        size: 36,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        isTrainCard ? 'ENTRENAR' : 'LOGROS',
+                        style: GoogleFonts.raleway(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2.5,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        isTrainCard ? 'Empieza ahora' : 'Ver progreso',
+                        style: GoogleFonts.raleway(
+                          color: Colors.white.withOpacity(0.80),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -804,35 +1222,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           secondaryEndGeometry: const AlignmentDirectional(0, -0.8),
           textDirectionForGeometry: TextDirection.rtl,
           primaryColors: const [
-            Color(0xFFFF69B4),
-            Color(0xFFE91E63),
-            Color(0xFFFFFFFF),
+            Color(0xFF6A0050), // magentaDark
+            Color(0xFFD71E49), // cosmicRed
+            Color(0xFFFF69B4), // vibrantPink
           ],
           secondaryColors: const [
-            Color(0xFFFFFFFF),
-            Color(0xFF9C27B0),
-            Color(0xFF800080),
+            Color(0xFF4A0060), // púrpura profundo
+            Color(0xFF800080), // wellnessPurple
+            Color(0xFFB5294E), // rosa oscuro
           ],
+          duration: const Duration(seconds: 5),
           child: Stack(
             children: [
-              // Partículas igual que home
+              // Partículas atmosféricas — consistente con home
               Positioned.fill(
                 child: ParticlesFly(
                   height: constraints.maxHeight,
                   width: constraints.maxWidth,
                   connectDots: false,
-                  numberOfParticles: 25,
-                  speedOfParticles: 0.8,
-                  lineColor: EvaColors.vibrantPink.withOpacity(0.2),
-                  particleColor: Colors.white.withOpacity(0.7),
-                  awayRadius: 180,
+                  numberOfParticles: 35,
+                  speedOfParticles: 0.5,
+                  lineColor: EvaColors.vibrantPink.withOpacity(0.08),
+                  particleColor: Colors.white.withOpacity(0.25),
+                  awayRadius: 160,
                   onTapAnimation: true,
                   isRandSize: true,
-                  isRandomColor: false,
+                  isRandomColor: true,
                   randColorList: [
-                    EvaColors.vibrantPink.withOpacity(0.5),
-                    Colors.white.withOpacity(0.7),
-                    EvaColors.cosmicRed.withOpacity(0.4),
+                    const Color(0xFFFFD700).withOpacity(0.30),
+                    EvaColors.vibrantPink.withOpacity(0.20),
+                    Colors.white.withOpacity(0.18),
+                    const Color(0xFFE8B4FF).withOpacity(0.22),
+                    const Color(0xFFFFB3D9).withOpacity(0.18),
                   ],
                 ),
               ),
@@ -1154,13 +1575,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontWeight: FontWeight.w700,
                     foreground: Paint()
                       ..shader = const LinearGradient(
-                        colors: [Colors.white, Color(0xFFFFD6EC)],
-                      ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
-                    shadows: [
+                        colors: [
+                          Color(0xFFFFD700), // dorado brillante — premium
+                          Color(0xFFFF69B4), // vibrantPink
+                          Color(0xFFFFB3D9), // lightPink — cierre suave
+                        ],
+                      ).createShader(const Rect.fromLTWH(0, 0, 200, 90)),
+                    shadows: const [
                       Shadow(
-                        color: Colors.white.withOpacity(0.6),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
+                        color: Color(0x99000000), // negro 60% — contraste real
+                        blurRadius: 16,
+                        offset: Offset(0, 4),
+                      ),
+                      Shadow(
+                        color: Color(0x66D71E49), // cosmicRed glow sutil
+                        blurRadius: 24,
+                        offset: Offset(0, 0),
                       ),
                     ],
                   ),
@@ -1171,16 +1601,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   style: GoogleFonts.cormorantGaramond(
                     fontSize: 72,
                     fontWeight: FontWeight.w800,
+                    letterSpacing: 4,
                     foreground: Paint()
                       ..shader = const LinearGradient(
-                        colors: [Colors.white, Color(0xFFE8B4FF)],
-                      ).createShader(const Rect.fromLTWH(0, 0, 300, 70)),
-                    letterSpacing: 4,
-                    shadows: [
+                        colors: [
+                          Colors.white,
+                          Color(0xFFFFD6EC),
+                          Color(0xFFE8B4FF),
+                        ],
+                      ).createShader(const Rect.fromLTWH(0, 0, 300, 80)),
+                    shadows: const [
                       Shadow(
-                        color: Colors.white.withOpacity(0.5),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
+                        color: Color(0xCC000000), // negro 80% — máximo contraste
+                        blurRadius: 12,
+                        offset: Offset(0, 3),
+                      ),
+                      Shadow(
+                        color: Color(0x80800080), // wellnessPurple glow
+                        blurRadius: 30,
+                        offset: Offset(0, 0),
                       ),
                     ],
                   ),
@@ -2596,6 +3035,226 @@ class _FullScreenGalleryState extends State<_FullScreenGallery> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// DRAWER HELPERS — Menú hamburguesa premium
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _DrawerSectionLabel extends StatelessWidget {
+  final String label;
+  const _DrawerSectionLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 4),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.raleway(
+              color: Colors.white.withOpacity(0.40),
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2.2,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              height: 1,
+              color: Colors.white.withOpacity(0.10),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DrawerNavItem extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  const _DrawerNavItem({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: EvaColors.vibrantPink.withOpacity(0.12),
+        highlightColor: EvaColors.vibrantPink.withOpacity(0.06),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: GoogleFonts.raleway(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: GoogleFonts.raleway(
+                          color: Colors.white.withOpacity(0.48),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withOpacity(0.20),
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerNavItemHighlighted extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _DrawerNavItemHighlighted({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        splashColor: EvaColors.cosmicRed.withOpacity(0.18),
+        highlightColor: EvaColors.cosmicRed.withOpacity(0.08),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                EvaColors.cosmicRed.withOpacity(0.20),
+                EvaColors.cosmicRed.withOpacity(0.06),
+                Colors.transparent,
+              ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+            border: const Border(
+              left: BorderSide(
+                color: EvaColors.vitalityYellow,
+                width: 3,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [EvaColors.cosmicRed, EvaColors.mediumPink],
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: EvaColors.cosmicRed.withOpacity(0.40),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: GoogleFonts.raleway(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.raleway(
+                          color: EvaColors.vitalityYellow.withOpacity(0.80),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: EvaColors.vitalityYellow.withOpacity(0.60),
+                  size: 18,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

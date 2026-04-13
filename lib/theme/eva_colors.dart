@@ -5,6 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 class EvaColors {
   // === PALETA PRINCIPAL - Rosa Vibrante y Cósmica ===
 
+  // Magenta oscuro premium (ancla visual unificadora)
+  static const Color magentaDark = Color(0xFF6A0050);
+
   // Rosa vibrante principal
   static const Color vibrantPink = Color(
     0xFFFF69B4,

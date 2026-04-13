@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:animate_gradient/animate_gradient.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +27,8 @@ class RoutinesScreen extends StatefulWidget {
 class _RoutinesScreenState extends State<RoutinesScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  late AnimationController _glowController;
+  late Animation<double> _glowAnimation;
   bool _loadingRoutines = true;
   bool _loadingPersonalized = true;
   bool _loadingTemplates = true;
@@ -59,6 +62,13 @@ class _RoutinesScreenState extends State<RoutinesScreen>
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(_onTabChanged);
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+    );
     _userProfileService.initializeProfile();
     _loadData();
   }
@@ -72,6 +82,7 @@ class _RoutinesScreenState extends State<RoutinesScreen>
   void dispose() {
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
+    _glowController.dispose();
     _searchCtrl.dispose();
     super.dispose();
   }
@@ -510,15 +521,16 @@ class _RoutinesScreenState extends State<RoutinesScreen>
               secondaryEndGeometry: const AlignmentDirectional(0, -0.8),
               textDirectionForGeometry: TextDirection.rtl,
               primaryColors: const [
-                Color(0xFFFF69B4),
-                Color(0xFFE91E63),
-                Color(0xFFFFFFFF),
+                Color(0xFFFF4081), // mediumPink — energía
+                Color(0xFFD71E49), // cosmicRed — tensión dramática
+                Color(0xFF6A0572), // deepPurple — profundidad
               ],
               secondaryColors: const [
-                Color(0xFFFFFFFF),
-                Color(0xFF9C27B0),
-                Color(0xFF800080),
+                Color(0xFFC2185B), // deepPink — transición cálida
+                Color(0xFF800080), // wellnessPurple — anclaje
+                Color(0xFFAD1457), // pinkDark — cierre saturado
               ],
+              duration: const Duration(seconds: 5),
               child: Container(),
             ),
           ),
@@ -1449,14 +1461,30 @@ class _RoutinesScreenState extends State<RoutinesScreen>
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.12),
           borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            stops: const [0.0, 0.5, 1.0],
+            colors: [
+              const Color(0xFFD71E49).withOpacity(0.35),
+              const Color(0xFFFF4081).withOpacity(0.18),
+              const Color(0xFF800080).withOpacity(0.28),
+            ],
+          ),
           border: Border.all(
             color: isFav
-                ? EvaColors.vibrantPink.withOpacity(0.5)
-                : Colors.white.withOpacity(0.2),
-            width: 1,
+                ? EvaColors.vibrantPink.withOpacity(0.7)
+                : const Color(0xFFFF69B4).withOpacity(0.40),
+            width: 1.0,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFD71E49).withOpacity(0.20),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -2547,13 +2575,42 @@ class _RoutinesScreenState extends State<RoutinesScreen>
   Widget _glassCard({required Widget child, EdgeInsets? padding}) {
     return Container(
       width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF4081).withOpacity(0.25),
+            blurRadius: 24,
+            spreadRadius: -4,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: child,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            padding: padding ?? const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withOpacity(0.18),
+                  Colors.white.withOpacity(0.07),
+                ],
+              ),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.30),
+                width: 1.2,
+              ),
+            ),
+            child: child,
+          ),
+        ),
+      ),
     );
   }
 
@@ -2654,27 +2711,43 @@ class _RoutinesScreenState extends State<RoutinesScreen>
     required IconData icon,
     required VoidCallback onPressed,
   }) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 18),
-        label: Text(
-          label,
-          style: GoogleFonts.raleway(
-              fontWeight: FontWeight.w700, fontSize: 15),
-        ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: EvaColors.cosmicRed,
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF4081).withOpacity(
+                  0.30 + 0.25 * _glowAnimation.value,
+                ),
+                blurRadius: 16 + 12 * _glowAnimation.value,
+                spreadRadius: -2,
+              ),
+            ],
           ),
-          elevation: 4,
-          shadowColor: EvaColors.cosmicRed.withOpacity(0.4),
-        ),
-      ),
+          child: ElevatedButton.icon(
+            onPressed: onPressed,
+            icon: Icon(icon, size: 18),
+            label: Text(
+              label,
+              style: GoogleFonts.raleway(
+                  fontWeight: FontWeight.w700, fontSize: 15),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: EvaColors.cosmicRed,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              elevation: 0,
+            ),
+          ),
+        );
+      },
     );
   }
 

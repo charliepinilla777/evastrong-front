@@ -84,13 +84,22 @@ class ContactScreen extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   foreground: Paint()
                     ..shader = const LinearGradient(
-                      colors: [Colors.white, Color(0xFFFFD6EC)],
+                      colors: [
+                        Color(0xFFFFD700),
+                        Color(0xFFFF69B4),
+                        Color(0xFFFFB3D9),
+                      ],
                     ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
-                  shadows: [
+                  shadows: const [
                     Shadow(
-                      color: Colors.white.withOpacity(0.6),
+                      color: Colors.black87,
+                      blurRadius: 8,
+                      offset: Offset(2, 2),
+                    ),
+                    Shadow(
+                      color: Color(0xFFFFD700),
                       blurRadius: 20,
-                      offset: const Offset(0, 4),
+                      offset: Offset(0, 0),
                     ),
                   ],
                 ),
@@ -103,14 +112,18 @@ class ContactScreen extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   foreground: Paint()
                     ..shader = const LinearGradient(
-                      colors: [Colors.white, Color(0xFFE8B4FF)],
+                      colors: [
+                        Colors.white,
+                        Color(0xFFFFD6EC),
+                        Color(0xFFE8B4FF),
+                      ],
                     ).createShader(const Rect.fromLTWH(0, 0, 300, 70)),
                   letterSpacing: 4,
-                  shadows: [
+                  shadows: const [
                     Shadow(
-                      color: Colors.white.withOpacity(0.5),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
+                      color: Colors.black54,
+                      blurRadius: 6,
+                      offset: Offset(1, 2),
                     ),
                   ],
                 ),
@@ -156,17 +169,7 @@ class ContactScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title, {bool useMontserrat = false}) {
-    if (useMontserrat) {
-      return Text(
-        title,
-        style: GoogleFonts.montserrat(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-    }
+  Widget _buildSectionTitle(String title) {
     return Text(
       title,
       style: GoogleFonts.cormorantGaramond(
@@ -296,7 +299,7 @@ class ContactScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionTitle(s.ourLocation, useMontserrat: true),
+          _buildSectionTitle(s.ourLocation),
           const SizedBox(height: 16),
           _buildInfoRow(
             icon: Icons.location_on,
@@ -424,14 +427,14 @@ class ContactScreen extends StatelessWidget {
         secondaryEndGeometry: const AlignmentDirectional(0, -0.8),
         textDirectionForGeometry: TextDirection.rtl,
         primaryColors: const [
+          Color(0xFF6A0050),
+          Color(0xFFD71E49),
           Color(0xFFFF69B4),
-          Color(0xFFE91E63),
-          Color(0xFFFFFFFF),
         ],
         secondaryColors: const [
-          Color(0xFFFFFFFF),
-          Color(0xFF9C27B0),
+          Color(0xFF4A0060),
           Color(0xFF800080),
+          Color(0xFFB5294E),
         ],
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -443,18 +446,18 @@ class ContactScreen extends StatelessWidget {
                     height: constraints.maxHeight,
                     width: constraints.maxWidth,
                     connectDots: false,
-                    numberOfParticles: 25,
-                    speedOfParticles: 0.8,
-                    lineColor: EvaColors.vibrantPink.withOpacity(0.2),
-                    particleColor: Colors.white.withOpacity(0.7),
+                    numberOfParticles: 35,
+                    speedOfParticles: 0.5,
+                    lineColor: EvaColors.vibrantPink.withOpacity(0.1),
+                    particleColor: Colors.white.withOpacity(0.25),
                     awayRadius: 180,
                     onTapAnimation: true,
                     isRandSize: true,
                     isRandomColor: false,
                     randColorList: [
-                      EvaColors.vibrantPink.withOpacity(0.5),
-                      Colors.white.withOpacity(0.7),
-                      EvaColors.cosmicRed.withOpacity(0.4),
+                      Colors.white.withOpacity(0.25),
+                      EvaColors.vibrantPink.withOpacity(0.30),
+                      const Color(0xFFFFD700).withOpacity(0.18),
                     ],
                   ),
                 ),
@@ -561,7 +564,6 @@ class ContactScreen extends StatelessWidget {
                             children: [
                               _buildSectionTitle(
                                 AppStrings.of(context).contactInfo,
-                                useMontserrat: true,
                               ),
                               const SizedBox(height: 16),
                               _buildInfoRow(

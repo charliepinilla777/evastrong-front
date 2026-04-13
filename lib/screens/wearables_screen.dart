@@ -32,10 +32,11 @@ class _WearablesScreenState extends State<WearablesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       backgroundColor: EvaColors.backgroundLight,
       appBar: AppBar(
-        title: const Text('Wearables'),
+        title: Text(s.wearablesTitle),
         backgroundColor: EvaColors.vibrantPink,
         foregroundColor: EvaColors.textOnVibrant,
         elevation: 8,
@@ -48,27 +49,18 @@ class _WearablesScreenState extends State<WearablesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Estado de conexión
             _buildConnectionStatus(),
             const SizedBox(height: 24),
-
-            // Datos actuales
             if (_currentData != null) ...[
               _buildCurrentDataCard(),
               const SizedBox(height: 24),
             ],
-
-            // Metas
             if (_currentGoals != null) ...[
               _buildGoalsCard(),
               const SizedBox(height: 24),
             ],
-
-            // Dispositivos disponibles
             _buildDevicesCard(),
             const SizedBox(height: 24),
-
-            // Métricas soportadas
             _buildSupportedMetricsCard(),
           ],
         ),
@@ -77,6 +69,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
   }
 
   Widget _buildConnectionStatus() {
+    final s = AppStrings.of(context);
     final isConnected = _wearableService.isConnected;
     final connectedDevice = _wearableService.connectedDevice;
 
@@ -103,7 +96,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isConnected ? 'Conectado' : 'No Conectado',
+                        isConnected ? s.wearableConnected : s.wearableNotConnected,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: isConnected
                               ? EvaColors.vibrantPink
@@ -138,7 +131,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
                               color: EvaColors.textOnVibrant,
                             ),
                           )
-                        : const Text('Conectar'),
+                        : Text(s.wearableConnect),
                   ),
                 if (isConnected)
                   IconButton(
@@ -156,6 +149,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
 
   Widget _buildCurrentDataCard() {
     if (_currentData == null) return const SizedBox.shrink();
+    final s = AppStrings.of(context);
 
     return Card(
       elevation: 4,
@@ -166,7 +160,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Datos Actuales',
+              s.wearableCurrentData,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: EvaColors.textPrimary,
                 fontWeight: FontWeight.bold,
@@ -179,43 +173,19 @@ class _WearablesScreenState extends State<WearablesScreen> {
               crossAxisCount: 2,
               childAspectRatio: 2.5,
               children: [
-                _buildMetricCard('Pasos', '${_currentData!.steps}', '👟'),
-                _buildMetricCard(
-                  'Calorías',
-                  '${_currentData!.caloriesBurned.round()}',
-                  '🔥',
-                ),
-                _buildMetricCard('FC', '${_currentData!.heartRate} bpm', '❤️'),
-                _buildMetricCard(
-                  'Min. Activos',
-                  '${_currentData!.activeMinutes}',
-                  '⏱️',
-                ),
-                _buildMetricCard(
-                  'Distancia',
-                  '${_currentData!.distance.toStringAsFixed(1)} km',
-                  '📍',
-                ),
-                _buildMetricCard(
-                  'Sueño',
-                  '${_currentData!.sleepHours.toStringAsFixed(1)} h',
-                  '😴',
-                ),
-                _buildMetricCard(
-                  'Peso',
-                  '${_currentData!.weight.toStringAsFixed(1)} kg',
-                  '⚖️',
-                ),
-                _buildMetricCard(
-                  'IMC',
-                  _currentData!.bmi.toStringAsFixed(1),
-                  '📊',
-                ),
+                _buildMetricCard(s.wearableSteps,         '${_currentData!.steps}',                           '👟'),
+                _buildMetricCard(s.calories,              '${_currentData!.caloriesBurned.round()}',           '🔥'),
+                _buildMetricCard(s.wearableHeartRate,     '${_currentData!.heartRate} bpm',                   '❤️'),
+                _buildMetricCard(s.wearableActiveMinutes, '${_currentData!.activeMinutes}',                   '⏱️'),
+                _buildMetricCard(s.wearableDistance,      '${_currentData!.distance.toStringAsFixed(1)} km',  '📍'),
+                _buildMetricCard(s.wearableSleep,         '${_currentData!.sleepHours.toStringAsFixed(1)} h', '😴'),
+                _buildMetricCard(s.wearableWeight,        '${_currentData!.weight.toStringAsFixed(1)} kg',    '⚖️'),
+                _buildMetricCard(s.wearableBMI,           _currentData!.bmi.toStringAsFixed(1),               '📊'),
               ],
             ),
             const SizedBox(height: 16),
             Text(
-              'Categoría IMC: ${_currentData!.bmiCategory}',
+              s.wearableBMICategory(_currentData!.bmiCategory),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: EvaColors.textPrimary,
                 fontWeight: FontWeight.w600,
@@ -259,6 +229,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
 
   Widget _buildGoalsCard() {
     if (_currentGoals == null) return const SizedBox.shrink();
+    final s = AppStrings.of(context);
 
     return Card(
       elevation: 4,
@@ -269,32 +240,22 @@ class _WearablesScreenState extends State<WearablesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Metas Diarias',
+              s.wearableDailyGoals,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: EvaColors.textPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
-            _buildGoalItem('Pasos', _currentGoals!.dailySteps, 10000, '👟'),
-            _buildGoalItem(
-              'Min. Activos',
-              _currentGoals!.activeMinutes,
-              30,
-              '⏱️',
-            ),
-            _buildGoalItem(
-              'Calorías',
-              _currentGoals!.caloriesBurned.round(),
-              500,
-              '🔥',
-            ),
-            _buildGoalItem('Sueño', _currentGoals!.sleepHours.round(), 8, '😴'),
+            _buildGoalItem(s.wearableSteps,         _currentGoals!.dailySteps,                10000, '👟'),
+            _buildGoalItem(s.wearableActiveMinutes, _currentGoals!.activeMinutes,             30,    '⏱️'),
+            _buildGoalItem(s.calories,              _currentGoals!.caloriesBurned.round(),    500,   '🔥'),
+            _buildGoalItem(s.wearableSleep,         _currentGoals!.sleepHours.round(),        8,     '😴'),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _editGoals,
               icon: const Icon(Icons.edit),
-              label: const Text('Editar Metas'),
+              label: Text(s.editGoalsTitle),
               style: ElevatedButton.styleFrom(
                 backgroundColor: EvaColors.vibrantPink,
                 foregroundColor: EvaColors.textOnVibrant,
@@ -333,9 +294,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
                     Text(
                       '$current/$goal',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: isCompleted
-                            ? Colors.green
-                            : EvaColors.textPrimary,
+                        color: isCompleted ? Colors.green : EvaColors.textPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -358,6 +317,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
   }
 
   Widget _buildDevicesCard() {
+    final s = AppStrings.of(context);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -370,7 +330,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Dispositivos Disponibles',
+                  s.wearableAvailableDevices,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: EvaColors.textPrimary,
                     fontWeight: FontWeight.bold,
@@ -379,7 +339,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
                 TextButton.icon(
                   onPressed: _scanDevices,
                   icon: const Icon(Icons.search),
-                  label: const Text('Escanear'),
+                  label: Text(s.wearableScan),
                 ),
               ],
             ),
@@ -395,7 +355,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'No se encontraron dispositivos',
+                      s.wearableNoDevices,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: EvaColors.textPrimary.withOpacity(0.5),
                       ),
@@ -412,25 +372,25 @@ class _WearablesScreenState extends State<WearablesScreen> {
   }
 
   Widget _buildDeviceTile(WearableDevice device) {
+    final s = AppStrings.of(context);
     return ListTile(
       leading: CircleAvatar(
         backgroundColor: device.batteryColor.withOpacity(0.2),
         child: Icon(Icons.watch, color: device.batteryColor),
       ),
       title: Text(device.name),
-      subtitle: Text(
-        'Batería: ${device.batteryLevel}% (${device.batteryStatus})',
-      ),
+      subtitle: Text(s.wearableBattery(device.batteryLevel, device.batteryStatus)),
       trailing: device.isConnected
-          ? Icon(Icons.check_circle, color: Colors.green)
+          ? const Icon(Icons.check_circle, color: Colors.green)
           : ElevatedButton(
               onPressed: () => _connectToDevice(device),
-              child: const Text('Conectar'),
+              child: Text(s.wearableConnect),
             ),
     );
   }
 
   Widget _buildSupportedMetricsCard() {
+    final s = AppStrings.of(context);
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -440,7 +400,7 @@ class _WearablesScreenState extends State<WearablesScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Métricas Soportadas',
+              s.wearableSupportedMetrics,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: EvaColors.textPrimary,
                 fontWeight: FontWeight.bold,
@@ -474,36 +434,29 @@ class _WearablesScreenState extends State<WearablesScreen> {
   }
 
   Future<void> _connectDevice() async {
-    setState(() {
-      _isConnecting = true;
-    });
-
+    setState(() => _isConnecting = true);
     try {
       final result = await _wearableService.connectDevice();
-
       if (result == WearableConnectionResult.success) {
         _currentData = await _wearableService.getCurrentData();
         _currentGoals = await _wearableService.getCurrentGoals();
         _devices = await _wearableService.getCompatibleDevices();
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Dispositivo conectado exitosamente'),
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppStrings.of(context).wearableConnectedOk),
             backgroundColor: Colors.green,
-          ),
-        );
+          ));
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Error al conectar dispositivo'),
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(AppStrings.of(context).wearableConnectError),
             backgroundColor: Colors.red,
-          ),
-        );
+          ));
+        }
       }
     } finally {
-      setState(() {
-        _isConnecting = false;
-      });
+      if (mounted) setState(() => _isConnecting = false);
     }
   }
 
@@ -513,39 +466,28 @@ class _WearablesScreenState extends State<WearablesScreen> {
       _currentData = null;
       _currentGoals = null;
     });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Dispositivo desconectado'),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppStrings.of(context).wearableDisconnected),
         backgroundColor: Colors.orange,
-      ),
-    );
+      ));
+    }
   }
 
   Future<void> _refreshData() async {
-    setState(() {
-      _isSyncing = true;
-    });
-
+    setState(() => _isSyncing = true);
     await _loadData();
-
-    setState(() {
-      _isSyncing = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Datos sincronizados'),
+    if (mounted) {
+      setState(() => _isSyncing = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppStrings.of(context).wearableDataSynced),
         backgroundColor: EvaColors.vibrantPink,
-      ),
-    );
+      ));
+    }
   }
 
   Future<void> _scanDevices() async {
-    setState(() {
-      _isSyncing = true;
-    });
-
+    setState(() => _isSyncing = true);
     final devices = await _wearableService.getCompatibleDevices();
     setState(() {
       _devices = devices;
@@ -554,13 +496,12 @@ class _WearablesScreenState extends State<WearablesScreen> {
   }
 
   Future<void> _connectToDevice(WearableDevice device) async {
-    // Implementar conexión a dispositivo específico
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Conectando a ${device.name}...'),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(AppStrings.of(context).wearableConnectingTo(device.name)),
         backgroundColor: EvaColors.vibrantPink,
-      ),
-    );
+      ));
+    }
   }
 
   void _editGoals() {

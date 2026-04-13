@@ -32,7 +32,7 @@ class _DietPlansScreenState extends State<DietPlansScreen> {
       final plans = await _planService.getPlans(lang: Localizations.localeOf(context).languageCode);
       setState(() { _plans = plans; _isLoading = false; });
     } catch (e) {
-      setState(() { _error = 'No se pudieron cargar los planes.'; _isLoading = false; });
+      setState(() { _error = AppStrings.of(context).planErrorMsg; _isLoading = false; });
     }
   }
 
@@ -171,7 +171,7 @@ class _DietPlansScreenState extends State<DietPlansScreen> {
             child: const Icon(Icons.tips_and_updates, color: EvaColors.vibrantPink, size: 24),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -414,7 +414,7 @@ class _PlanDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeData = _getThemeData(plan.theme);
+    final themeData = _getThemeData(plan.theme, context);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -463,7 +463,7 @@ class _PlanDetailScreen extends StatelessWidget {
           ),
 
           // Nutrition summary
-          SliverToBoxAdapter(child: _buildNutritionSummary(themeData)),
+          SliverToBoxAdapter(child: _buildNutritionSummary(context, themeData)),
 
           // Meals list
           SliverPadding(
@@ -480,7 +480,8 @@ class _PlanDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNutritionSummary(Map<String, dynamic> themeData) {
+  Widget _buildNutritionSummary(BuildContext context, Map<String, dynamic> themeData) {
+    final s = AppStrings.of(context);
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
@@ -494,11 +495,11 @@ class _PlanDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _summaryItem('🔥', '${plan.caloriesMin}–${plan.caloriesMax}', 'kcal totales'),
+          _summaryItem('🔥', '${plan.caloriesMin}–${plan.caloriesMax}', s.kCalTotal),
           _divider(),
-          _summaryItem('🍽️', '${plan.meals.length}', 'comidas'),
+          _summaryItem('🍽️', '${plan.meals.length}', s.mealsLabel),
           _divider(),
-          _summaryItem('⚡', plan.meals.where((m) => m.optional).isNotEmpty ? 'Sí' : 'No', 'post-entreno'),
+          _summaryItem('⚡', plan.meals.where((m) => m.optional).isNotEmpty ? s.yes : s.no, s.postWorkout),
         ],
       ),
     );
@@ -580,7 +581,7 @@ class _PlanDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          meal.optional ? '${meal.label} (opcional)' : meal.label,
+                          meal.optional ? '${meal.label} (${AppStrings.of(context).optionalLabel})' : meal.label,
                           style: TextStyle(
                             fontSize: 11,
                             color: meal.optional ? EvaColors.motivationOrange : EvaColors.vibrantPink,
@@ -668,28 +669,29 @@ class _PlanDetailScreen extends StatelessWidget {
   }
 
   void _showLockDialog(BuildContext context, String accessLevel) {
+    final s = AppStrings.of(context);
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.lock, color: EvaColors.vibrantPink),
-            SizedBox(width: 8),
-            Text('Comida bloqueada'),
+            const Icon(Icons.lock, color: EvaColors.vibrantPink),
+            const SizedBox(width: 8),
+            Text(s.lockedMeal),
           ],
         ),
         content: Text(
           accessLevel == 'premium'
-              ? 'Esta comida está disponible en el plan Premium.'
-              : 'Esta comida está disponible en el plan Basic o Premium.',
+              ? s.mealLockedPremiumMsg
+              : s.mealLockedBasicMsg,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(s.close)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: EvaColors.vibrantPink),
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Ver planes', style: TextStyle(color: Colors.white)),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(s.viewPlans, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -705,17 +707,33 @@ class _PlanDetailScreen extends StatelessWidget {
     );
   }
 
-  Map<String, dynamic> _getThemeData(String theme) {
-    const themes = {
-      'perdida_peso': {'emoji': '🔥', 'label': 'Pérdida de peso', 'color': EvaColors.cosmicRed},
-      'gluteos_piernas': {'emoji': '🍑', 'label': 'Cola y piernas', 'color': EvaColors.motivationOrange},
-      'piel_radiante': {'emoji': '✨', 'label': 'Piel radiante', 'color': EvaColors.wellnessPurple},
-      'saciedad': {'emoji': '🥦', 'label': 'Saciedad alta', 'color': EvaColors.activeGreen},
-      'gluteos_heavy': {'emoji': '💪', 'label': 'Glúteos heavy', 'color': EvaColors.strongBlue},
-      'bienestar': {'emoji': '🌸', 'label': 'Bienestar general', 'color': EvaColors.vibrantPink},
-      'equilibrado': {'emoji': '⚖️', 'label': 'Mix equilibrado', 'color': EvaColors.vitalityYellow},
+  Map<String, dynamic> _getThemeData(String theme, [BuildContext? ctx]) {
+    const themeEmoji = {
+      'perdida_peso':    '🔥',
+      'gluteos_piernas': '🍑',
+      'piel_radiante':   '✨',
+      'saciedad':        '🥦',
+      'gluteos_heavy':   '💪',
+      'bienestar':       '🌸',
+      'equilibrado':     '⚖️',
     };
-    return themes[theme] ?? {'emoji': '📅', 'label': theme, 'color': EvaColors.vibrantPink};
+    const themeColor = {
+      'perdida_peso':    EvaColors.cosmicRed,
+      'gluteos_piernas': EvaColors.motivationOrange,
+      'piel_radiante':   EvaColors.wellnessPurple,
+      'saciedad':        EvaColors.activeGreen,
+      'gluteos_heavy':   EvaColors.strongBlue,
+      'bienestar':       EvaColors.vibrantPink,
+      'equilibrado':     EvaColors.vitalityYellow,
+    };
+    final label = ctx != null
+        ? AppStrings.of(ctx).planThemeLabel(theme)
+        : theme;
+    return {
+      'emoji': themeEmoji[theme] ?? '📅',
+      'label': label,
+      'color': themeColor[theme] ?? EvaColors.vibrantPink,
+    };
   }
 }
 
@@ -779,22 +797,22 @@ class _RecipeDetailSheet extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(recipe.name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
-                    _nutritionRow(),
+                    _nutritionRow(context),
                     const SizedBox(height: 16),
                     if (recipe.description != null && recipe.description!.isNotEmpty) ...[
-                      _sectionTitle('Descripción'),
+                      _sectionTitle(AppStrings.of(context).description),
                       const SizedBox(height: 8),
                       Text(recipe.description!, style: TextStyle(color: Colors.grey[700], fontSize: 14)),
                       const SizedBox(height: 20),
                     ],
                     if (recipe.ingredients.isNotEmpty) ...[
-                      _sectionTitle('Ingredientes'),
+                      _sectionTitle(AppStrings.of(context).ingredients),
                       const SizedBox(height: 8),
                       ...recipe.ingredients.map((ing) => _ingredientRow(ing)),
                       const SizedBox(height: 20),
                     ],
                     if (recipe.steps.isNotEmpty) ...[
-                      _sectionTitle('Preparación'),
+                      _sectionTitle(AppStrings.of(context).preparation),
                       const SizedBox(height: 8),
                       ...recipe.steps.asMap().entries.map((e) => _stepRow(e.key + 1, e.value)),
                     ],
@@ -817,20 +835,23 @@ class _RecipeDetailSheet extends StatelessWidget {
   Widget _sectionTitle(String t) => Text(t,
     style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: EvaColors.vibrantPink));
 
-  Widget _nutritionRow() => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: EvaColors.activeGreen.withOpacity(0.08),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: EvaColors.activeGreen.withOpacity(0.3)),
-    ),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-      _nutItem('${recipe.calories}', 'Calorías', '🔥'),
-      _nutItem('${recipe.protein.toStringAsFixed(0)}g', 'Proteína', '💪'),
-      _nutItem('${recipe.carbs.toStringAsFixed(0)}g', 'Carbos', '🌾'),
-      _nutItem('${recipe.fat.toStringAsFixed(0)}g', 'Grasa', '🥑'),
-    ]),
-  );
+  Widget _nutritionRow(BuildContext context) {
+    final s = AppStrings.of(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: EvaColors.activeGreen.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: EvaColors.activeGreen.withOpacity(0.3)),
+      ),
+      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+        _nutItem('${recipe.calories}',                    s.calories, '🔥'),
+        _nutItem('${recipe.protein.toStringAsFixed(0)}g', s.protein,  '💪'),
+        _nutItem('${recipe.carbs.toStringAsFixed(0)}g',   s.carbs,    '🌾'),
+        _nutItem('${recipe.fat.toStringAsFixed(0)}g',     s.fat,      '🥑'),
+      ]),
+    );
+  }
 
   Widget _nutItem(String val, String lbl, String emoji) => Column(children: [
     Text(emoji, style: const TextStyle(fontSize: 18)),

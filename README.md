@@ -1,352 +1,228 @@
-# 🏋️ EvaStrong - Fitness App Frontend
+# EvaStrong — App de Fitness Femenino
 
-> A modern, secure Flutter application for fitness enthusiasts with professional 3D effects, administrative dashboard, and real-time backend integration.
+<div align="center">
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-blue.svg)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-blue.svg)](https://dart.dev)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
-[![3D Effects](https://img.shields.io/badge/3D_Effects-Professional-pink.svg)]()
-[![Admin Dashboard](https://img.shields.io/badge/Admin_Dashboard-Real_Time-orange.svg)]()
+[![i18n](https://img.shields.io/badge/i18n-ES%20%2F%20EN-green.svg)]()
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-pink.svg)]()
+
+**App de fitness dirigida a mujeres — entrenamiento personalizado, planes de dieta, voz entrenadora y estilo visual premium.**
+
+[Características](#características) • [Arquitectura](#arquitectura) • [Instalación](#instalación) • [API](#integración-con-el-backend) • [Pantallas](#pantallas)
+
+</div>
 
 ---
 
-## Features
+## Características
 
-### Professional 3D Effects System
-- Elegant Pink Gradient Theme: Sophisticated color palette with pink-only gradients
-- 3D Components: Cards, buttons, text, and icons with depth effects
-- Glassmorphism Effects: Modern glass-like UI elements
-- Neon Effects: Dynamic lighting and glow effects
-- Shadows & Elevation: Multi-layered shadows for depth perception
-- Gradient Text: Beautiful text effects with shader masks
+### Entrenamiento personalizado
+- Rutinas adaptadas al nivel y objetivo de cada usuaria (free, basic, premium, exclusive)
+- Fases de calentamiento, entrenamiento principal y enfriamiento
+- Series, repeticiones y descansos configurables por ejercicio
+- GIFs demostrativos de cada ejercicio (Wikimedia Commons)
+- **Voz entrenadora** en tiempo real (flutter_tts, es-MX): anuncios de ejercicio, conteo regresivo, frases motivacionales
+- Indicador de series con progreso visual, temporizador circular animado y glassmorphism
 
-### Authentication & Security
-- Secure JWT-based authentication with 7-day token expiration
-- Automatic token refresh without user interruption
-- OAuth integration ready (Google, Apple)
-- Encrypted credential storage using native Keychain/Keystore
-- Input validation and sanitization
-- Admin Authentication: Secure admin login with JWT tokens
+### Experiencia visual premium
+- Fondo animado con degradado oscuro por fase (calentamiento / principal / enfriamiento)
+- **Glassmorphism** con `BackdropFilter` blur en todas las cards
+- Tipografía de alta costura: Cormorant Garamond (títulos), Raleway (UI), Playfair Display (frases motivacionales)
+- Colores de marca: vibrantPink (#FF69B4), cosmicRed (#D71E49), wellnessPurple (#800080)
+- Partículas decorativas (`particles_fly`) y degradados animados (`animate_gradient`)
+- Dialog de transición de fase con animación scale+fade
 
-### Advanced User Profiles
-- Photo Upload: Gallery and camera integration for profile pictures
-- Personal Information: Name, age, and performance tracking
-- Performance Metrics: 0-100 scale with visual indicators
-- Achievement System: Track user accomplishments
-- Profile Management: Complete CRUD operations for user data
+### Planes de nutrición
+- Catálogo de planes de dieta categorizados
+- Recetas con ingredientes, instrucciones y macros
+- Recomendaciones personalizadas por objetivo
 
-### Workout Management
-- Browse and filter workout routines by category and difficulty
-- 8 workout categories: Strength, Cardio, Flexibility, HIIT, Pilates, Yoga, Crossfit, Functional
-- 4 difficulty levels: Beginner, Intermediate, Advanced, Expert
-- Detailed exercise information with sets, reps, and rest times
-- 5-star rating system for routines
-- View counter to track popularity
+### Sistema de suscripciones
+| Plan | Nivel | Acceso |
+|------|-------|--------|
+| Free | `free` | Rutinas básicas |
+| Básico ($9.99) | `basic` | + Rutinas intermedias |
+| Premium ($19.99) | `premium` | + Rutinas avanzadas |
+| Elite ($29.99) | `exclusive` | Acceso total |
 
-### Video Library
-- Upload and manage fitness videos (up to 500MB)
-- Multiple video format support (MP4, WebM, MOV, AVI, MKV)
-- Progressive video streaming (no full download required)
-- Exercise categorization and tagging
-- Video ratings with user comments
-- Search functionality
+- Pagos con MercadoPago y PayPal
+- Dialog premium luxury con animación de entrada
 
-### Subscription & Payments
-- Multiple subscription tiers: Free, Basic, Premium
-- Mercado Pago integration for secure payments
-- Access control based on subscription level
-- Transaction history and receipts
-- Subscription Management: Track active, expiring, and expired subscriptions
+### Internacionalización (i18n)
+- Español e inglés — detección automática por preferencia guardada
+- `AppStrings.of(context)` en todas las pantallas
+- Traducciones de nombres de ejercicios, zonas musculares, tags de rutina y UI completa
+- Backend: `?lang=en` en endpoints de rutinas
 
-### Administrative Dashboard
-- Real-time Statistics: Live data from backend
-- User Analytics: Total users, active users, new registrations
-- Revenue Tracking: Daily/monthly revenue and sales data
-- Achievement Monitoring: Track user accomplishments
-- Subscription Management: Monitor and send renewal reminders
-- Traffic Analytics: User sessions and engagement metrics
-- Feedback System: User satisfaction and response management
-- Interactive Charts: 7-day traffic trends with custom visualizations
-- Action Controls: Send reminders and respond to feedback
+### Chat y comunidad
+- Chat de soporte con entrenadores
+- Salas de grupo y mensajería directa
+
+### Logros y progreso
+- Sistema de logros desbloqueables
+- Historial de entrenamientos completados
+- Gamificación y seguimiento de racha
+
+### Otros
+- Perfil de usuario con métricas de rendimiento
+- Integración con wearables
+- Pantalla de feedback (estrellas + categorías)
+- Notificaciones de renovación vía WhatsApp (Twilio)
+- Almacenamiento seguro con `flutter_secure_storage`
 
 ---
 
-## Architecture
+## Arquitectura
 
-### Tech Stack
-- Frontend: Flutter (Dart)
-- State Management: Provider pattern
-- Local Storage: flutter_secure_storage (encrypted)
-- HTTP Client: http package with custom interceptors
-- Image Processing: image_picker for profile photos
-- 3D Effects: Custom Effects3DService system
-- Backend: Node.js REST API
-- Database: MongoDB
-- Payments: Mercado Pago API
-- Authentication: JWT with Bearer tokens
+### Stack
+- **Framework:** Flutter 3.0+ (Dart)
+- **State management:** Provider
+- **Almacenamiento local:** flutter_secure_storage + SharedPreferences
+- **HTTP:** http package con interceptores JWT
+- **Voz:** flutter_tts (entrenadora)
+- **Animaciones:** animate_gradient, particles_fly, AnimationController
+- **Tipografía:** google_fonts (Cormorant Garamond, Raleway, Playfair Display, Great Vibes)
+- **Backend:** Node.js REST API en Render.com
 
-### Project Structure
+### Estructura del proyecto
 ```
 lib/
-├── main.dart
-├── screens/
-│   ├── login_screen.dart
-│   ├── home_screen.dart
-│   ├── routines_screen.dart
-│   ├── videos_screen.dart
-│   ├── video_upload_screen.dart
-│   ├── payment_screen.dart
-│   ├── profile_screen.dart
-│   ├── user_profile_screen.dart          # Advanced user profiles
-│   ├── admin_login_screen.dart           # Admin authentication
-│   ├── admin_dashboard_screen.dart       # Administrative dashboard
-│   ├── profile_setup_screen.dart
-│   ├── support_chat_screen.dart
-│   ├── achievements_screen.dart
-│   ├── community_screen.dart
-│   ├── video_tutorials_screen.dart
-│   └── wearables_screen.dart
-├── services/
-│   ├── api_service_v2.dart
-│   ├── secure_storage_service.dart
-│   ├── routine_service.dart
-│   ├── video_service.dart
-│   ├── payment_service.dart
-│   ├── user_profile_service.dart         # Profile management
-│   ├── admin_service.dart                # Backend integration
-│   └── effects_3d_service.dart           # 3D effects system
-├── providers/
-│   ├── auth_provider_v2.dart
-│   ├── payment_provider.dart
-│   └── subscription_provider.dart
+├── main.dart                        # App shell, TabBar, drawer, Home + Contact tabs
+├── l10n/
+│   └── app_strings.dart             # Sistema i18n ES/EN (AppStrings.of(context))
 ├── theme/
-│   └── eva_colors.dart                    # Color system
+│   └── eva_colors.dart              # Paleta completa EvaColors + temas claro/oscuro
+├── screens/
+│   ├── routine_execution_screen.dart  # Ejecución de rutina (voz, timer, glassmorphism)
+│   ├── routines_screen.dart           # Catálogo de rutinas + dialog premium
+│   ├── diet_plans_screen.dart         # Planes de nutrición
+│   ├── diet_screen.dart               # Detalle de dieta y recetas
+│   ├── achievements_screen.dart       # Logros y progreso
+│   ├── chat_screen.dart               # Chat con entrenadores
+│   ├── feedback_screen.dart           # Feedback de usuarias
+│   ├── payments_screen.dart           # Suscripciones y pagos
+│   ├── settings_screen.dart           # Idioma, notificaciones, cuenta
+│   ├── user_profile_screen.dart       # Perfil y métricas
+│   ├── wearables_screen.dart          # Integración wearables
+│   └── contact_screen.dart            # Información de contacto
+├── services/
+│   ├── routine_service.dart           # GET /routines con lang param
+│   ├── routine_recommendation_service.dart  # Rutina personalizada
+│   ├── exercise_gif_service.dart      # GIFs por ejercicio (Wikimedia)
+│   ├── exercise_instructions_service.dart   # Instrucciones bilingüe paso a paso
+│   ├── voice_coach_service.dart       # TTS entrenadora (singleton)
+│   ├── history_service.dart           # Historial de entrenamientos
+│   ├── favorites_service.dart         # Rutinas favoritas
+│   ├── diet_service.dart              # Planes de dieta
+│   ├── chat_service.dart              # Mensajería
+│   ├── payment_service.dart           # MercadoPago / PayPal
+│   └── secure_auth_service.dart       # JWT + secure storage
+├── providers/
+│   └── language_provider.dart         # LanguageProvider (SharedPreferences)
 └── widgets/
-    ├── routine_card.dart
-    ├── video_card.dart
-    ├── pricing_cards.dart
-    └── [3D Components]                    # 3D UI components
+    └── protected_screen.dart          # SubscriptionGate + AdminDenied screens
 ```
 
 ---
 
-## Getting Started
+## Pantallas
 
-### Prerequisites
-- Flutter 3.0 or higher
-- Dart 3.0 or higher
-- Android SDK (API level 24+)
-- iOS 12.0 or higher
-- Backend server running on `http://localhost:5000`
+| Pantalla | Descripción |
+|----------|-------------|
+| Home | Degradado animado, partículas, logo EVA STRONG, carrusel, planes de suscripción, acciones glassmorphism |
+| Rutinas | Catálogo filtrable, rating, dialog premium luxury, rutina personalizada |
+| Ejecución | Timer circular, voz entrenadora, GIF ejercicio, series, instrucciones, glassmorphism por fase |
+| Dietas | Planes de nutrición y recetas con macros |
+| Logros | Historial, gamificación, racha |
+| Chat | Mensajería con entrenadores y salas de grupo |
+| Perfil | Métricas personales, foto, ajustes |
+| Contacto | Redes sociales con glassmorphism y gradientes |
+| Configuración | Idioma (ES/EN), notificaciones, seguridad |
+| Feedback | Estrellas + categorías + comentario libre |
 
-### Installation
+---
 
-1. **Clone the repository**
+## Instalación
+
+### Requisitos
+- Flutter 3.0+
+- Dart 3.0+
+- Android SDK API 24+ / iOS 12.0+
+- Backend corriendo (local o Render.com)
+
+### Pasos
+
 ```bash
+# 1. Clonar
 git clone https://github.com/charliepinilla777/evastrong-front.git
 cd evastrong-front
-```
 
-2. **Install dependencies**
-```bash
+# 2. Dependencias
 flutter pub get
+
+# 3. Ejecutar (desarrollo local con backend local)
+flutter run --dart-define=APP_DEBUG=true
+
+# 4. Ejecutar contra backend en Render
+flutter run
 ```
 
-3. **Configure environment**
-Create `.env` file:
-```env
-BACKEND_URL=http://localhost:5000
-ENVIRONMENT=development
-MERCADO_PAGO_PUBLIC_KEY=your_public_key
-```
+### Build de producción
 
-4. **Run the app**
 ```bash
-flutter run -d web-server --web-port=8080
-```
-
-### Building for Production
-
-**Android:**
-```bash
+# Android
 flutter build apk --release
-```
 
-**iOS:**
-```bash
+# iOS
 flutter build ios --release
 ```
 
-**Web:**
-```bash
-flutter build web --release
-```
+---
+
+## Integración con el backend
+
+El frontend se conecta a [evastrong-backend](https://github.com/charliepinilla777/evastrong-backend) (desplegado en Render.com).
+
+### Endpoints principales usados
+
+| Endpoint | Uso |
+|----------|-----|
+| `POST /auth/register` | Registro (valida 8 chars + mayúscula + dígito) |
+| `POST /auth/login` | Login JWT |
+| `GET /routines?lang=en` | Rutinas con localización |
+| `GET /routines/:id?lang=en` | Detalle de rutina |
+| `POST /routines/:id/rate` | Calificar rutina (atómico) |
+| `GET /diet-recommendations` | Planes de dieta |
+| `GET /recipes` | Recetas |
+| `POST /feedback` | Enviar feedback |
+| `GET /subscriptions/current` | Suscripción activa |
+| `POST /payments/create-preference` | Crear pago MercadoPago |
+
+> Nota: Render.com free tier tiene cold start de ~30-50s tras inactividad.
 
 ---
 
-## Security Features
+## Seguridad
 
-- **Encrypted Storage**: Credentials stored securely in Keychain/Keystore
-- **Secure Communications**: HTTPS in production
-- **Token Management**: JWT with automatic refresh
-- **Input Validation**: Client-side and server-side validation
-- **Rate Limiting**: API protection against brute force
-- **CORS Protection**: Properly configured cross-origin access
-- **XSS Prevention**: Input sanitization
-- **Admin Authentication**: Role-based access control
-- **Image Security**: Safe image upload and processing
+- JWT almacenado en `flutter_secure_storage` (Keychain/Keystore)
+- Sin credenciales ni claves en el código fuente
+- `.env`, `.claude/`, `keys/` excluidos del repositorio
+- Sin rutas ni pantallas de administración en la app cliente
 
 ---
 
-## Key Features in Detail
+## Licencia
 
-### 3D Effects System
-1. **Gradient Components**: Beautiful pink gradients throughout the app
-2. **Shadow Effects**: Multi-layered shadows for depth
-3. **Glass Effects**: Modern glassmorphism UI elements
-4. **Interactive Animations**: Smooth transitions and hover effects
-5. **Custom Components**: Reusable 3D widgets
+© 2024-2026 Carlos Andres Pinilla. Todos los derechos reservados.
 
-### User Profile Management
-1. **Photo Upload**: Camera or gallery selection
-2. **Profile Editing**: Name, age, performance metrics
-3. **Achievement Tracking**: Visual progress indicators
-4. **Data Validation**: Input validation and error handling
-5. **Secure Storage**: Encrypted profile data storage
-
-### Administrative Dashboard
-1. **Real-time Data**: Live statistics from backend
-2. **User Analytics**: Comprehensive user metrics
-3. **Revenue Tracking**: Financial performance data
-4. **Subscription Management**: Active and expiring subscriptions
-5. **Feedback System**: User satisfaction tracking
-6. **Action Controls**: Send reminders and responses
-7. **Interactive Charts**: Custom data visualizations
-
-### Authentication Flow
-1. User registers with email and password
-2. Backend validates and creates JWT token
-3. Token stored securely in encrypted storage
-4. Token automatically refreshed before expiration
-5. Graceful logout clears all credentials
-6. **Admin Access**: Separate authentication for dashboard
-
----
-
-## Testing
-
-```bash
-# Run tests
-flutter test
-
-# Run tests with coverage
-flutter test --coverage
-
-# Run specific test
-flutter test test/services/api_service_test.dart
-
-# Test admin functionality
-flutter test test/services/admin_service_test.dart
-```
-
----
-
-## Supported Platforms
-
-| Platform | Version | Status | 3D Effects | Admin Dashboard |
-|----------|---------|--------|------------|-----------------|
-| Android  | 7.0+    | | | |
-| iOS      | 12.0+   | | | |
-| Web      | Latest  | | | |
-| Windows  | 10+     | Planned | Planned | Planned |
-
----
-
-## Backend Integration
-
-### API Endpoints
-- **Authentication**: `/api/auth/login`, `/api/auth/register`
-- **User Management**: `/api/users/*`
-- **Admin Dashboard**: `/api/admin/*`
-- **Subscriptions**: `/api/subscriptions/*`
-- **Payments**: `/api/payments/*`
-- **Profiles**: `/api/profiles/*`
-
-### Admin Dashboard Endpoints
-- `GET /api/admin/users/stats` - User statistics
-- `GET /api/admin/revenue/stats` - Revenue data
-- `GET /api/admin/achievements/stats` - Achievement metrics
-- `GET /api/admin/subscriptions/stats` - Subscription data
-- `GET /api/admin/traffic/stats` - Traffic analytics
-- `GET /api/admin/feedback/stats` - Feedback metrics
-- `POST /api/admin/subscriptions/send-reminder` - Send reminders
-- `POST /api/admin/feedback/respond` - Respond to feedback
-
----
-
-## License
-
-© 2024-2025 Carlos Andres Pinilla. Todos los derechos reservados.
-
-Este software es propiedad exclusiva de Carlos Andres Pinilla. Queda estrictamente prohibido copiar, modificar, distribuir o usar este código sin autorización escrita previa del propietario. Ver archivo [LICENSE](LICENSE) para más detalles.
-
----
-
-## Backend Repository
-
-Frontend connects to: [evastrong-backend](https://github.com/charliepinilla777/evastrong-backend)
-
----
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/charliepinilla777/evastrong-front/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/charliepinilla777/evastrong-front/discussions)
-
----
-
-## Documentation
-
-- [Setup Guide](docs/SETUP.md)
-- [API Integration](docs/API.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [3D Effects Guide](DOCUMENTACION_02_EFECTOS_3D.md)
-- [Backend Connection](DOCUMENTACION_03_DASHBOARD_BACKEND.md)
-- [Complete Implementation](DOCUMENTACION_04_IMPLEMENTACION_COMPLETA.md)
-- [Contributing](CONTRIBUTING.md)
-
----
-
-## Recent Updates
-
-### Latest Features (v2.0)
-- Professional 3D Effects System with elegant pink gradients
-- Advanced User Profiles with photo upload and performance tracking
-- Administrative Dashboard with real-time backend integration
-- Admin Authentication with secure JWT tokens
-- Real-time Analytics with interactive charts
-- Feedback Management system
-- Subscription Reminders functionality
-- Live Data Updates from backend
-
-### Technical Improvements
-- Enhanced error handling with fallback to mock data
-- Optimized HTTP requests with proper headers
-- Secure token management for admin access
-- Improved UI consistency with 3D effects
-- Better user experience with loading states
-- Comprehensive documentation and guides
+Queda prohibido copiar, modificar o distribuir este código sin autorización escrita del propietario. Ver [LICENSE](LICENSE).
 
 ---
 
 <div align="center">
 
-**Desarrollado por [Carlos Andres Pinilla](https://github.com/charliepinilla777)**
-
-**© 2024-2025 Todos los derechos reservados**
+Desarrollado por [Carlos Andres Pinilla](https://github.com/charliepinilla777)
 
 </div>
-
-
-# Deployment Update
-- 2026-02-05 16:35:49
