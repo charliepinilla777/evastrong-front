@@ -6,6 +6,7 @@ import '../services/routine_service.dart';
 import '../theme/eva_colors.dart';
 
 /// Reproductor de video de rutina con subtítulos accesibles sincronizados.
+/// OPTIMIZADO: throttle del listener de subtítulos para evitar 60 setState/seg.
 class RoutineVideoPlayer extends StatefulWidget {
   final String? videoUrl;
   final List<SubtitleEntry> subtitles;
@@ -28,6 +29,10 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
   bool _hasError = false;
   bool _subtitlesEnabled = true;
   SubtitleEntry? _currentSubtitle;
+
+  // FIX: throttle — solo revisamos subtítulos cada 250ms, no en cada frame
+  DateTime _lastSubtitleCheck = DateTime(0);
+  static const _subtitleThrottle = Duration(milliseconds: 250);
 
   @override
   void initState() {
@@ -75,6 +80,12 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
 
   void _syncSubtitle() {
     if (_videoController == null) return;
+
+    // FIX: throttle — ignoramos llamadas más frecuentes que cada 250ms
+    final now = DateTime.now();
+    if (now.difference(_lastSubtitleCheck) < _subtitleThrottle) return;
+    _lastSubtitleCheck = now;
+
     final pos = _videoController!.value.position;
     SubtitleEntry? found;
     for (final sub in widget.subtitles) {
@@ -83,6 +94,8 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
         break;
       }
     }
+
+    // FIX: solo llamamos setState si el subtítulo realmente cambió
     if (found != _currentSubtitle) {
       setState(() => _currentSubtitle = found);
     }
@@ -96,8 +109,6 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
     super.dispose();
   }
 
-  // ─────────────────────────── BUILD ───────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -110,26 +121,19 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
     );
   }
 
-  // ─────────────────────── VIDEO BOX ───────────────────────────────────────
-
   Widget _buildVideoBox() {
-    // Sin URL → placeholder
     if (widget.videoUrl == null || widget.videoUrl!.isEmpty) {
       return _buildPlaceholder(
         icon: Icons.videocam_off_outlined,
         message: 'Esta rutina no tiene video asignado.',
       );
     }
-
-    // Error de carga
     if (_hasError) {
       return _buildPlaceholder(
         icon: Icons.error_outline,
         message: 'No se pudo cargar el video.',
       );
     }
-
-    // Cargando
     if (!_initialized) {
       return Container(
         height: 200,
@@ -143,8 +147,6 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
         ),
       );
     }
-
-    // Player listo
     if (_videoController == null || _chewieController == null) {
       return _buildPlaceholder(
         icon: Icons.error_outline,
@@ -183,8 +185,6 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
     );
   }
 
-  // ─────────────────────── PANEL SUBTÍTULOS ────────────────────────────────
-
   Widget _buildSubtitlePanel() {
     return Container(
       width: double.infinity,
@@ -196,16 +196,13 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Encabezado con toggle
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                const Icon(
-                  Icons.closed_caption_outlined,
-                  color: Colors.white70,
-                  size: 18,
-                ),
+                const Icon(Icons.closed_caption_outlined,
+                    color: Colors.white70, size: 18),
                 const SizedBox(width: 8),
                 Text(
                   'Subtítulos',
@@ -221,7 +218,6 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
             ),
           ),
           const Divider(color: Colors.white12, height: 1),
-          // Contenido
           AnimatedCrossFade(
             duration: const Duration(milliseconds: 200),
             crossFadeState: _subtitlesEnabled
@@ -232,12 +228,12 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
               child: _buildSubtitleContent(),
             ),
             secondChild: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 10),
               child: Text(
                 'Subtítulos desactivados',
-                style: GoogleFonts.raleway(
-                    fontSize: 12, color: Colors.white38),
+                style:
+                    GoogleFonts.raleway(fontSize: 12, color: Colors.white38),
               ),
             ),
           ),
@@ -248,7 +244,8 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
 
   Widget _buildToggle() {
     return GestureDetector(
-      onTap: () => setState(() => _subtitlesEnabled = !_subtitlesEnabled),
+      onTap: () =>
+          setState(() => _subtitlesEnabled = !_subtitlesEnabled),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding:
@@ -294,7 +291,6 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
   }
 
   Widget _buildSubtitleContent() {
-    // Sin datos de subtítulos
     if (widget.subtitles.isEmpty) {
       return Row(
         children: [
@@ -304,27 +300,20 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
             child: Text(
               'No hay subtítulos disponibles para esta rutina.',
               style: GoogleFonts.raleway(
-                fontSize: 13,
-                color: Colors.white38,
-                height: 1.5,
-              ),
+                  fontSize: 13, color: Colors.white38, height: 1.5),
             ),
           ),
         ],
       );
     }
 
-    // Subtítulo activo
     final text = _currentSubtitle?.text ?? '';
     if (text.isEmpty) {
       return Center(
         child: Text(
           '— — —',
           style: GoogleFonts.raleway(
-            fontSize: 13,
-            color: Colors.white30,
-            letterSpacing: 2,
-          ),
+              fontSize: 13, color: Colors.white30, letterSpacing: 2),
         ),
       );
     }
@@ -335,7 +324,8 @@ class _RoutineVideoPlayerState extends State<RoutineVideoPlayer> {
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: EvaColors.vibrantPink.withOpacity(0.3)),
+        border:
+            Border.all(color: EvaColors.vibrantPink.withOpacity(0.3)),
       ),
       child: Text(
         text,

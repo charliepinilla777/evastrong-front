@@ -5,6 +5,8 @@ import '../theme/eva_colors.dart';
 import '../services/motivational_service.dart';
 
 /// Widget dinámico que muestra frases motivacionales animadas
+/// OPTIMIZADO: ícono fijo en state (no recalculado en cada build),
+/// AnimatedBuilder solo rebuilda el subtree mínimo necesario.
 class MotivationalWidget extends StatefulWidget {
   final double? width;
   final double? height;
@@ -31,8 +33,21 @@ class _MotivationalWidgetState extends State<MotivationalWidget>
   late Animation<Offset> _slideAnimation;
 
   String _currentPhrase = '';
-  int _currentIndex = 0;
   Timer? _phraseTimer;
+
+  // FIX: el ícono se elige UNA vez al cambiar frase, no en cada build()
+  late IconData _currentIcon;
+
+  static const _iconPool = [
+    Icons.fitness_center,
+    Icons.favorite,
+    Icons.star,
+    Icons.local_fire_department,
+    Icons.auto_awesome,
+    Icons.psychology,
+    Icons.self_improvement,
+    Icons.sports_gymnastics,
+  ];
 
   @override
   void initState() {
@@ -47,20 +62,17 @@ class _MotivationalWidgetState extends State<MotivationalWidget>
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     _controller.forward();
   }
@@ -82,7 +94,8 @@ class _MotivationalWidgetState extends State<MotivationalWidget>
   void _updatePhrase() {
     setState(() {
       _currentPhrase = MotivationalPhrases.getRandomPhrase();
-      _currentIndex = (_currentIndex + 1) % 60; // Total de frases disponibles
+      // FIX: ícono elegido aquí, no en build()
+      _currentIcon = _iconPool[Random().nextInt(_iconPool.length)];
     });
   }
 
@@ -104,94 +117,83 @@ class _MotivationalWidgetState extends State<MotivationalWidget>
             position: _slideAnimation,
             child: ScaleTransition(
               scale: _scaleAnimation,
-              child: Container(
-                width: widget.width,
-                height: widget.height,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      EvaColors.vibrantPink.withOpacity(0.9),
-                      EvaColors.cosmicRed.withOpacity(0.8),
-                      EvaColors.wellnessPurple.withOpacity(0.7),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: EvaColors.vibrantPink.withOpacity(0.3),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 8),
-                    ),
-                    BoxShadow(
-                      color: EvaColors.cosmicRed.withOpacity(0.2),
-                      blurRadius: 15,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (widget.showIcon) ...[
-                      Icon(
-                        _getRandomIcon(),
-                        color: Colors.white,
-                        size: 40,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    Text(
-                      _currentPhrase,
-                      textAlign: TextAlign.center,
-                      style:
-                          widget.textStyle ??
-                          Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                    ),
-                  ],
-                ),
-              ),
+              // FIX: child se pasa desde fuera de AnimatedBuilder
+              // para que el Container no se reconstruya en cada frame
+              child: child,
             ),
           ),
         );
       },
+      // FIX: el contenido estático va en child, AnimatedBuilder lo reutiliza
+      child: Container(
+        width: widget.width,
+        height: widget.height,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              EvaColors.vibrantPink.withOpacity(0.9),
+              EvaColors.cosmicRed.withOpacity(0.8),
+              EvaColors.wellnessPurple.withOpacity(0.7),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: EvaColors.vibrantPink.withOpacity(0.3),
+              blurRadius: 20,
+              spreadRadius: 2,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: EvaColors.cosmicRed.withOpacity(0.2),
+              blurRadius: 15,
+              spreadRadius: 1,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (widget.showIcon) ...[
+              Icon(
+                _currentIcon, // FIX: usa el ícono del state
+                color: Colors.white,
+                size: 40,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+            ],
+            Text(
+              _currentPhrase,
+              textAlign: TextAlign.center,
+              style: widget.textStyle ??
+                  Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+            ),
+          ],
+        ),
+      ),
     );
-  }
-
-  IconData _getRandomIcon() {
-    final icons = [
-      Icons.fitness_center,
-      Icons.favorite,
-      Icons.star,
-      Icons.local_fire_department,
-      Icons.auto_awesome,
-      Icons.psychology,
-      Icons.self_improvement,
-      Icons.sports_gymnastics,
-    ];
-    return icons[Random().nextInt(icons.length)];
   }
 }
 
@@ -227,13 +229,12 @@ class CompactMotivationalWidget extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+          const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               displayPhrase,
-              style:
-                  textStyle ??
+              style: textStyle ??
                   Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
@@ -249,6 +250,8 @@ class CompactMotivationalWidget extends StatelessWidget {
 }
 
 /// Widget para banner motivacional en la parte superior de pantallas
+/// OPTIMIZADO: RepaintBoundary aisla el banner del resto del árbol.
+/// El texto NO se rebuilda en cada frame de la animación del gradiente.
 class MotivationalBanner extends StatefulWidget {
   final double height;
   final bool autoRotate;
@@ -277,19 +280,13 @@ class _MotivationalBannerState extends State<MotivationalBanner>
       duration: const Duration(seconds: 10),
       vsync: this,
     );
-
     _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
-
     _updatePhrase();
-    if (widget.autoRotate) {
-      _startAutoRotation();
-    }
+    if (widget.autoRotate) _startAutoRotation();
   }
 
   void _updatePhrase() {
-    setState(() {
-      _currentPhrase = MotivationalPhrases.getRandomPhrase();
-    });
+    setState(() => _currentPhrase = MotivationalPhrases.getRandomPhrase());
   }
 
   void _startAutoRotation() {
@@ -309,75 +306,88 @@ class _MotivationalBannerState extends State<MotivationalBanner>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          height: widget.height,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                EvaColors.vibrantPink,
-                EvaColors.cosmicRed,
-                EvaColors.wellnessPurple,
-              ],
-              stops: [
-                0.0 + (_animation.value * 0.2),
-                0.5,
-                1.0 - (_animation.value * 0.2),
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: EvaColors.vibrantPink.withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.fitness_center,
-                    color: Colors.white.withOpacity(0.9),
-                    size: 30,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      _currentPhrase,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.star,
-                    color: Colors.white.withOpacity(0.9),
-                    size: 30,
+    return SizedBox(
+      height: widget.height,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // FIX: solo el gradiente se animia — el texto NO se rebuilda
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (_, __) => DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: const [
+                    EvaColors.vibrantPink,
+                    EvaColors.cosmicRed,
+                    EvaColors.wellnessPurple,
+                  ],
+                  stops: [
+                    0.0 + (_animation.value * 0.2),
+                    0.5,
+                    1.0 - (_animation.value * 0.2),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: EvaColors.vibrantPink.withOpacity(0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
             ),
           ),
-        );
-      },
+
+          // FIX: RepaintBoundary — el texto NO se repinta con el gradiente
+          RepaintBoundary(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.fitness_center,
+                      color: Colors.white.withOpacity(0.9),
+                      size: 30,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        _currentPhrase,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.star,
+                      color: Colors.white.withOpacity(0.9),
+                      size: 30,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
