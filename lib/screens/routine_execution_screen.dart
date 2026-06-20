@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +7,7 @@ import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.da
 import 'package:google_fonts/google_fonts.dart';
 import '../l10n/app_strings.dart';
 import '../services/exercise_gif_service.dart';
+import '../widgets/routine_video_player.dart';
 import '../services/exercise_instructions_service.dart';
 import '../services/history_service.dart';
 import '../services/routine_recommendation_service.dart';
@@ -2179,213 +2180,70 @@ class _RoutineExecutionScreenState extends State<RoutineExecutionScreen>
 
   // ─── Video dialog ─────────────────────────────────────────────────────────────
 
-  void _showVideoDialog(String videoUrl) {
+  // Gradiente de 2 colores segun la fase actual (para fondos y dialogos)
+  List<Color> _getPhaseGradientColors() {
+    switch (_currentPhase) {
+      case 'calentamiento':
+        return [EvaColors.motivationOrange, EvaColors.magentaDark];
+      case 'principal':
+        return [EvaColors.vibrantPink, EvaColors.wellnessPurple];
+      case 'enfriamiento':
+        return [EvaColors.strongBlue, const Color(0xFF0A0A2A)];
+      default:
+        return [EvaColors.balanceGray, EvaColors.magentaDark];
+    }
+  }
+
+  // Confirmacion antes de salir de la rutina en ejecucion
+  void _showExitConfirmation() {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(AppStrings.of(context).demonstration),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.play_circle_outline, size: 60, color: Colors.purple),
-            const SizedBox(height: 12),
-            Text(videoUrl, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          ],
+        backgroundColor: Colors.black87,
+        title: Text(
+          AppStrings.of(context).exitRoutineTitle,
+          style: const TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          AppStrings.of(context).exitRoutineBody,
+          style: const TextStyle(color: Colors.white70),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppStrings.of(ctx).close)),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppStrings.of(ctx).cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+            },
+            child: Text(AppStrings.of(ctx).exit),
+          ),
         ],
       ),
     );
   }
 
-  // ─── Exit confirmation ────────────────────────────────────────────────────────
-
-  void _showExitConfirmation() {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.65),
-      builder: (context) {
-        return TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.80, end: 1.0),
-          duration: const Duration(milliseconds: 350),
-          curve: Curves.easeOutBack,
-          builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
-          child: Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.symmetric(horizontal: 32),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(26),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        EvaColors.magentaDark.withOpacity(0.90),
-                        EvaColors.cosmicRed.withOpacity(0.85),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(26),
-                    border: Border.all(color: Colors.white.withOpacity(0.22), width: 1.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: EvaColors.cosmicRed.withOpacity(0.40),
-                        blurRadius: 36,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.fromLTRB(26, 30, 26, 24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Icono de advertencia
-                      Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.12),
-                          border: Border.all(color: Colors.white.withOpacity(0.28), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: EvaColors.cosmicRed.withOpacity(0.50),
-                              blurRadius: 18,
-                              spreadRadius: 1,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.warning_amber_rounded,
-                            size: 32, color: Colors.white),
-                      ),
-                      const SizedBox(height: 18),
-                      Text(
-                        AppStrings.of(context).exitRoutineTitle,
-                        style: GoogleFonts.cormorantGaramond(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        AppStrings.of(context).exitRoutineBody,
-                        style: GoogleFonts.raleway(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.82),
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          // Cancelar — glass
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => Navigator.pop(context),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.14),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.28),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  AppStrings.of(context).cancel,
-                                  style: GoogleFonts.raleway(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Salir — gradient rojo
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                _timer?.cancel();
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.92),
-                                  borderRadius: BorderRadius.circular(14),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.25),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  AppStrings.of(context).exit,
-                                  style: GoogleFonts.raleway(
-                                    color: EvaColors.cosmicRed,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 15,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+  void _showVideoDialog(String videoUrl) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: Colors.black87,
+          title: Text(
+            AppStrings.of(context).demonstration,
+            style: const TextStyle(color: Colors.white),
           ),
-        );
-      },
-    );
-  }
-
-  // ─── Helpers de color y fase ──────────────────────────────────────────────────
-
-  List<Color> _getPhaseGradientColors() {
-    switch (_currentPhase) {
-      case 'calentamiento':
-        return [
-          const Color(0xFF3D0C00),
-          EvaColors.cosmicRed.withOpacity(0.85),
-          EvaColors.motivationOrange.withOpacity(0.70),
-          EvaColors.magentaDark,
-        ];
-      case 'principal':
-        return [
-          EvaColors.magentaDark,
-          EvaColors.wellnessPurple,
-          EvaColors.cosmicRed.withOpacity(0.70),
-          EvaColors.vibrantPink.withOpacity(0.55),
-        ];
-      case 'enfriamiento':
-        return [
-          const Color(0xFF0A0A2A),
-          EvaColors.strongBlue.withOpacity(0.75),
-          EvaColors.wellnessPurple.withOpacity(0.65),
-          EvaColors.magentaDark,
-        ];
-      default:
-        return [EvaColors.magentaDark, EvaColors.wellnessPurple];
+          content: SizedBox(
+            width: double.maxFinite,
+            child: RoutineVideoPlayer(videoUrl: videoUrl),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text(AppStrings.of(ctx).close)),
+          ],
+        ),
+      );
     }
-  }
 
   // _getBackgroundColor ya no se usa directamente (reemplazado por Stack + gradiente)
   // pero se conserva para no romper referencias externas si las hubiera.
